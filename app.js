@@ -26,7 +26,7 @@ import {google} from 'googleapis';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5000;
 
 // dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -88,9 +88,9 @@ const ilovepdf = new ILovePDFApi(
 
 
 /////////////////////////////////////////////////////////Routings/////////////////////////////////////////////////////////
-// app.get("/", (req, res) => {
-//     res.redirect("/login");
-// });
+app.get("/", (req, res) => {
+    res.redirect("/login");
+});
 
 app.get("/login", (req, res) =>{
     res.send("Login");
