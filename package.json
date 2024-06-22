@@ -1,0 +1,56 @@
+{
+  "name": "study-sync",
+  "version": "1.0.0",
+  "description": "Notes Sharing App",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/navaneethjainsl/minor-project.git"
+  },
+  "author": "Navaneeth, Druthi, Hitesh",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/navaneethjainsl/minor-project/issues"
+  },
+  "homepage": "https://github.com/navaneethjainsl/minor-project#readme",
+  "dependencies": {
+    "@azure/identity": "^4.2.0",
+    "@azure/openai": "^1.0.0-beta.12",
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
+    "@google-cloud/local-auth": "^2.1.1",
+    "@google/generative-ai": "^0.11.4",
+    "@ilovepdf/ilovepdf-nodejs": "^0.2.6",
+    "body-parser": "^1.20.2",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "express-fileupload": "^1.5.0",
+    "express-session": "^1.18.0",
+    "eyes": "^0.1.8",
+    "ffmpeg": "^0.0.4",
+    "firebase": "^10.12.0",
+    "fluent-ffmpeg": "^2.1.3",
+    "fs": "^0.0.1-security",
+    "google-auth-library": "^9.10.0",
+    "googleapis": "^105.0.0",
+    "https": "^1.0.0",
+    "lodash": "^4.17.21",
+    "microsoft-cognitiveservices-speech-sdk": "^1.36.0",
+    "mongodb": "^6.6.1",
+    "mongoose": "^8.3.4",
+    "openai": "^4.47.1",
+    "passport": "^0.7.0",
+    "passport-local-mongoose": "^8.0.0",
+    "path": "^0.12.7",
+    "pdf-extract": "^1.0.11",
+    "pdf-parse": "^1.1.1",
+    "pdf2json": "^3.1.3",
+    "pdfreader": "^3.0.2",
+    "process": "^0.11.10",
+    "request": "^2.88.2"
+  },
+  "type": "module"
+}

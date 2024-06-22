@@ -1,3 +1,8 @@
+#own
+credentials.json
+*.m4a
+*.wav
+
 # Logs
 logs
 *.log
