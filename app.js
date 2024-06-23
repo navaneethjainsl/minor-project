@@ -26,7 +26,7 @@ import {google} from 'googleapis';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 3000;
 
 // dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -113,9 +113,10 @@ app.post("/login", async (req, res) =>{
         // console.log(userData);
         // res.send(userData);
 
-        res.send("Login Successful");
+        // res.send("Login Successful");
         // Success redirect
-        res.redirect("/login"); 
+        // res.redirect("/login");
+        res.json({success: true});
     });
     // console.log("userData");
     // console.log(userData);
@@ -123,7 +124,8 @@ app.post("/login", async (req, res) =>{
     // res.send("Login Unsuccessful");
 
     // Failure redirect
-    res.redirect("/login");
+    // res.redirect("/login");
+    res.json({success: false, message: "Username or password incorrect"});
 });
 
 app.get("/signup", (req, res) =>{
@@ -138,7 +140,7 @@ app.post("/signup", async (req, res) =>{
     const password = req.body.password;
     const confirmPassword = req.body.confirmPassword;
     if(password !== confirmPassword){
-        res.status(401).send("Passwords dont match");
+        res.status(401).json({success: false, message: "Passwords dont match"});
     }
 
     // const usersCol = collection(dbf, 'users');
@@ -160,15 +162,92 @@ app.post("/signup", async (req, res) =>{
 
     // console.log("usersRef");
     // console.log(usersRef);
-    res.redirect("/login");
+    // res.redirect("/login");
+    res.status(200).json({success: true});
     
 });
+
+app.get('/home',async (req, res) => {
+    // const username = req.body.username;
+    const username = "navaneethjainsl";
+
+    const querySnapshot = await getDocs(collection(dbf, username));
+    let docs = {};
+    querySnapshot.forEach((doc) => {
+        console.log(doc.id, " => ", doc.data());
+
+        docs[doc.id]= doc.data();
+    });
+    
+    console.log(Object.values(docs.notes));
+
+    res.json({success: true, files: Object.values(docs.notes)});
+});
+
+
+import { GoogleGenerativeAI } from "@google/generative-ai";
+// import dotenv from 'dotenv/config';
+// import fs from "fs";
+
+// Access your API key as an environment variable (see "Set up your API key" above)
+const genAI = new GoogleGenerativeAI(process.env.API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
+app.get('/pdfSummary', async (req, res, next) => {
+    
+    try {
+        const allText = await readPDF('public/pdfs/IDS.pdf');
+        // res.send(allText);
+        // res.json({success: true, content: allText});
+        
+        const prompt = "Give me a summary of this"
+        const result = await model.generateContent(prompt + allText);
+        const response = await result.response;
+        const text = response.text();
+        console.log(text);
+        res.json({success: true, summary: text});
+    } catch (err) {
+        console.error('Error reading PDF:', err);
+        // res.status(500).send('Error processing PDF'); // Handle errors gracefully
+        res.json({success: false, message: "Error processing PDF"});
+    }
+});
+
+app.get('/pdfText', async (req, res, next) => {
+    
+    try {
+        const allText = await readPDF('public/pdfs/IDS.pdf');
+        // res.send(allText);
+        res.status(200).json({success: true, content: allText});
+    } catch (err) {
+        console.error('Error reading PDF:', err);
+        // res.status(500).send('Error processing PDF'); // Handle errors gracefully
+        res.status(500).json({success: false, message: "Error processing PDF"});
+    }
+});
+
+function readPDF(filePath) {
+    return new Promise((resolve, reject) => {
+      const allText = []; // Array to store all extracted text
+      new PdfReader().parseFileItems(filePath, (err, item) => {
+        if (err) {
+          reject(err); // Reject the promise if there's an error
+        } else if (!item) {
+          resolve(allText.join('\n')); // Resolve with all text joined by newline on EOF
+        } else if (item.text) {
+          allText.push(item.text); // Append text to the array
+        }
+      });
+    });
+}
 
 app.get('/upload' , async (req, res) => {
     res.render('upload');
 });
 
 app.post("/upload", async (req, res) => {
+    // const username = req.body.username;
+    const username = "navaneethjainsl";
+    
     console.log("req.body");
     console.log(req.body);
     console.log("req.files");
@@ -179,7 +258,7 @@ app.post("/upload", async (req, res) => {
     if(req.files){
         const file = req.files.file;
     
-        const fileRef = ref(storage, `uploads/${file.name}`);
+        const fileRef = ref(storage, `${username}/${file.name}`);
         // const filesRef = ref(storage, 'mountains.jpg');
     
         const metadata = {
@@ -217,51 +296,37 @@ app.post("/upload", async (req, res) => {
             () => {
                 // Handle successful uploads on complete
                 // For instance, get the download URL: https://firebasestorage.googleapis.com/...
-                getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-                console.log('File available at', downloadURL);
+                getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
+                    console.log('File available at', downloadURL);
+
+                    const fileName = file.name;
+                    const usersRef = collection(dbf, username);
+                    
+                    await updateDoc(doc(usersRef, "notes"), {
+                        [file.name.substring(0, fileName.indexOf('.'))]: {
+                        name: file.name,
+                        mimetype: file.mimetype,
+                        link: downloadURL,
+                        size: file.size,
+                        }
+                    });
+
+                    // Later Version: to append without reading -> 
+                    // notes: firebase.firestore.FieldValue.arrayUnion(...newData.notes) , where newData = note:{notes: []}
+                    
+                    // res.status(200).json({success: true, downloadURL: downloadURL, file: file});
+                    res.status(200).json({success: true, downloadURL: downloadURL});
                 });
             }
         );
     
         
     }
-    res.redirect('/upload');
+
+    
+    // res.redirect('/upload');
 });
 
-app.get('/pdfToText', async (req, res, next) => {
-
-    // new PdfReader().parseFileItems("public/pdfs/IDS.pdf", (err, item) => {
-    //     if (err) console.error("error:", err);
-    //     else if (!item) console.warn("end of file");
-    //     else if (item.text) {
-    //         console.log(item.text)
-    //     };
-    //     res.send(item.text)
-    // });
-
-    function readPDF(filePath) {
-        return new Promise((resolve, reject) => {
-          const allText = []; // Array to store all extracted text
-          new PdfReader().parseFileItems(filePath, (err, item) => {
-            if (err) {
-              reject(err); // Reject the promise if there's an error
-            } else if (!item) {
-              resolve(allText.join('\n')); // Resolve with all text joined by newline on EOF
-            } else if (item.text) {
-              allText.push(item.text); // Append text to the array
-            }
-          });
-        });
-    }
-    try {
-        const allText = await readPDF('public/pdfs/IDS.pdf');
-        res.send(allText);
-    } catch (err) {
-        console.error('Error reading PDF:', err);
-        res.status(500).send('Error processing PDF'); // Handle errors gracefully
-    }
- 
-});
 
 app.get("/ilovepdf/merge", async (req, res)=>{
     
@@ -289,7 +354,7 @@ app.get("/ilovepdf/merge", async (req, res)=>{
         
 });
 
-app.get('/drive', (req, res)=>{
+app.get('/drive/upload', (req, res)=>{
     const CREDENTIALS_PATH = path.join(process.cwd(), 'credentials2.json')
     const TOKEN_PATH = path.join(process.cwd(), 'token.json')
 
@@ -353,8 +418,10 @@ app.get('/drive', (req, res)=>{
                 fields: 'id',
             });
             console.log('File Id:', file.data.id);
+            res.json({success: true, fileId: file.data.id});
         } catch (error) {
             console.error('Error uploading file:', error);
+            res.json({success: false, error: 'Error uploading file:'});
         }
     }
 
@@ -362,7 +429,7 @@ app.get('/drive', (req, res)=>{
     try {
         const auth = await authorize();
         await uploadFile(auth);
-        res.redirect("/end")
+        // res.redirect("/end")
     } catch (error) {
         console.error('Error during authentication or file upload:', error);
     }
@@ -370,6 +437,90 @@ app.get('/drive', (req, res)=>{
 
 
 });
+
+import {GoogleAuth} from 'google-auth-library';
+// import {google} from 'googleapis';
+// req -> fileId
+
+app.get('/drive/download', async (req, res) => {
+    // const fileId = req.body.fileId;
+    const fileId = "1dJWJP8kdoI6JbQD3KoYZdu33UJ8CUFa2";
+
+    const CREDENTIALS_PATH = path.join(process.cwd(), 'credentials2.json')
+    const TOKEN_PATH = path.join(process.cwd(), 'token.json')
+
+    // Scopes required to access Google Drive
+    const SCOPES = ['https://www.googleapis.com/auth/drive.file'];
+
+    async function authorize() {
+        const content = fs.readFileSync(CREDENTIALS_PATH);
+        console.log(JSON.parse(content));
+        const {web} = JSON.parse(content);
+        console.log(web);
+        const { client_secret, client_id, redirect_uris } = web;
+        const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
+
+        if (fs.existsSync(TOKEN_PATH)) {
+            const token = fs.readFileSync(TOKEN_PATH);
+            oAuth2Client.setCredentials(JSON.parse(token));
+        }
+        else {
+            const authUrl = oAuth2Client.generateAuthUrl({
+                access_type: 'offline',
+                scope: SCOPES,
+            });
+            console.log('Authorize this app by visiting this url:', authUrl);
+            const rl = readline.createInterface({
+                input: process.stdin,
+                output: process.stdout,
+            });
+            const code = await new Promise((resolve) => {
+                rl.question('Enter the code from that page here: ', (code) => {
+                    rl.close();
+                    resolve(code);
+                });
+            });
+            const tokenResponse = await oAuth2Client.getToken(code);
+            console.log(tokenResponse)
+            oAuth2Client.setCredentials(tokenResponse.tokens);
+            fs.writeFileSync(TOKEN_PATH, JSON.stringify(tokenResponse.tokens));
+            console.log('Token stored to', TOKEN_PATH);
+        }
+        return oAuth2Client;
+    }
+    
+    // const auth = new GoogleAuth({
+    //     scopes: 'https://www.googleapis.com/auth/drive',
+    // });
+    const auth = await authorize();
+    const service = google.drive({version: 'v3', auth});
+    
+    try {
+        const file = await service.files.get({
+            fileId: fileId,
+            alt: 'media',
+        });
+        console.log(file.status);
+        res.json({success: true, status: file});
+    } catch (err) {
+        // TODO(developer) - Handle error
+        throw err;
+    }
+})
+
+app.get('/drive/preview', async (req, res) => {
+    // const fileId = req.params.file;
+    const fileId = "1dJWJP8kdoI6JbQD3KoYZdu33UJ8CUFa2";
+
+    // res.json({success: true, redirect:`https://drive.google.com/file/d/${fileId}/view`});
+    res.send(`<iframe id="inlineFrameExample" 
+    title="Inline Frame Example" 
+    width="300" 
+    height="200" 
+    src="https://drive.google.com/file/d/${fileId}/view"> 
+    
+    </iframe>`);
+})
 
 app.get('/end', (req, res)=>{
     res.send("Success");

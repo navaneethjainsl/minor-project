@@ -9,25 +9,25 @@ const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
 // Text Input
 async function textInput() {
 
-    const prompt = "What is the difference between java and javascript"
-    // const prompt = "Which is better - Java or C++? Overall tell me one language"
+  const prompt = "What is the difference between java and javascript"
+  // const prompt = "Which is better - Java or C++? Overall tell me one language"
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
-    console.log(text);
+  const result = await model.generateContent(prompt);
+  const response = await result.response;
+  const text = response.text();
+  console.log(text);
 }
 
 // textInput();
 
 // Image Input
 function fileToGenerativePart(path, mimeType) {
-    return {
-      inlineData: {
-        data: Buffer.from(fs.readFileSync(path)).toString("base64"),
-        mimeType
-      },
-    };
+  return {
+    inlineData: {
+      data: Buffer.from(fs.readFileSync(path)).toString("base64"),
+      mimeType
+    },
+  };
 }
 
 async function OCR() {
@@ -50,6 +50,7 @@ async function pdf() {
   const prompt = "Generate a summary of this document";
 
   const pdf = fileToGenerativePart("./public/pdfs/IDS.pdf", "application/pdf");
+  // const pdf = fileToGenerativePart("https://firebasestorage.googleapis.com/v0/b/student-sync-nie.appspot.com/o/navaneethjainsl%2FIDS.pdf?alt=media&token=9264d4a0-d41b-4bd5-8942-2e4f841dd947", "application/pdf");
 
   const result = await model.generateContent([prompt, pdf]);
   const response = await result.response;
