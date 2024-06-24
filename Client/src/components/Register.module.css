@@ -1,0 +1,106 @@
+/* Register.module.css */
+
+.formContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  /* transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; */
+}
+
+.formContainer form:hover {
+  transform: scale(1.05);
+  /* box-shadow: 0 0 15px rgba(0, 0, 0, 0.3); */
+  /* box-shadow: 0 0 12px rgb(203 195 195 / 30%) */
+}
+
+.formContainer form {
+  background-color: #171717;
+  padding: 2em;
+  border-radius: 25px;
+  /* box-shadow: 0 0 12px rgb(203 195 195 / 30%); */
+  width: 330px;
+  display: flex;
+  flex-direction: column;
+  /* transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; */
+
+}
+
+.formContainer h2 {
+  text-align: center;
+  margin: 1em 0;
+  color: #ffffff;
+  font-size: 1.5em;
+}
+
+.formContainer .field {
+  display: flex;
+  margin: 8px 0px;
+  align-items: center;
+  gap: 0.5em;
+  border-radius: 25px;
+  padding: 0.6em;
+  background-color: #252525;
+  box-shadow: inset 2px 5px 10px rgb(5, 5, 5);
+  /* transition: background-color 0.3s ease-in-out; */
+  /* transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; */
+
+}
+
+.formContainer .field:hover {
+  background-color: #353535;
+}
+
+.formContainer .input-icon {
+  height: 1.3em;
+  width: 1.3em;
+  fill: #fffbfb;
+}
+
+.formContainer .input-field {
+  background: none;
+  border: none;
+  outline: none;
+  width: 100%;
+  color: white; /* Ensure text color is set to white */
+  fill: white; /* Adjust if applicable */
+}
+
+.formContainer .btn {
+  display: flex;
+  justify-content: center;
+  gap: 1em;
+  margin-top: 2em;
+  padding: 20px;
+}
+
+.formContainer .button1,
+.formContainer .button2 {
+  padding: 0.5em 1.5em;
+  border-radius: 5px;
+  border: none;
+  outline: none;
+  transition: background-color 0.4s ease-in-out;
+  background-color: #252525;
+  color: #ffffff;
+}
+
+.formContainer .button1:hover,
+.formContainer .button2:hover {
+  background-color: #000000;
+}
+
+.formContainer .button3 {
+  margin-top: 1em;
+  padding: 0.5em 1em;
+  border-radius: 5px;
+  border: none;
+  outline: none;
+  transition: background-color 0.4s ease-in-out;
+  background-color: #252525;
+  color: #ffffff;
+}
+
+.formContainer .button3:hover {
+  background-color: #ff0000;
+}

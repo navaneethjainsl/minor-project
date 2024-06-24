@@ -1,8 +1,8 @@
-import React from 'react';
-import designIcon from '../logo/icon-design.svg';
-import devIcon from '../logo/icon-dev.svg';
-import appIcon from '../logo/icon-app.svg';
-import photoIcon from '../logo/icon-photo.svg';
+import React from "react";
+import designIcon from "../logo/icon-design.svg";
+import devIcon from "../logo/icon-dev.svg";
+import appIcon from "../logo/icon-app.svg";
+import photoIcon from "../logo/icon-photo.svg";
 
 const ServiceSection = () => {
   return (
@@ -16,7 +16,8 @@ const ServiceSection = () => {
           <div className="service-content-box">
             <h4 className="h4 service-item-title">Web design</h4>
             <p className="service-item-text">
-              The most modern and high-quality design made at a professional level.
+              The most modern and high-quality design made at a professional
+              level.
             </p>
           </div>
         </li>
@@ -49,7 +50,8 @@ const ServiceSection = () => {
           <div className="service-content-box">
             <h4 className="h4 service-item-title">Photography</h4>
             <p className="service-item-text">
-              I make high-quality photos of any category at a professional level.
+              I make high-quality photos of any category at a professional
+              level.
             </p>
           </div>
         </li>

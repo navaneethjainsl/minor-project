@@ -1,13 +1,13 @@
 import React from "react";
 import "./Sidebar.css";
 
-import ContactPage from "./Contactpage";
+import QnaPage from "./Qnapage";
 
 const Contact = () => {
   return (
     <>
       <article className="about  active" data-page="about">
-        <ContactPage />
+        <QnaPage />
       </article>
     </>
   );

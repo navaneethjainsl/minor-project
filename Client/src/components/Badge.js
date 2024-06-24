@@ -1,17 +1,17 @@
-import React from 'react';
-import './Sidebar.css';
+import React from "react";
+import "./Sidebar.css";
 
 // Import images directly
-import logo1 from '../logo/logo-1-color.png';
-import logo2 from '../logo/logo-2-color.png';
-import logo3 from '../logo/logo-3-color.png';
-import logo4 from '../logo/logo-4-color.png';
-import logo5 from '../logo/logo-5-color.png';
-import logo6 from '../logo/logo-6-color.png';
+import logo1 from "../logo/logo-1-color.png";
+import logo2 from "../logo/logo-2-color.png";
+import logo3 from "../logo/logo-3-color.png";
+import logo4 from "../logo/logo-4-color.png";
+import logo5 from "../logo/logo-5-color.png";
+import logo6 from "../logo/logo-6-color.png";
 
-const ClientsSection = () => (
+const Badgesection = () => (
   <section className="clients">
-    <h3 className="h3 clients-title">Clients</h3>
+    <h3 className="h3 clients-title">Badges</h3>
     <ul className="clients-list has-scrollbar">
       <li className="clients-item">
         <a href="#">
@@ -47,4 +47,4 @@ const ClientsSection = () => (
   </section>
 );
 
-export default ClientsSection;
+export default Badgesection;

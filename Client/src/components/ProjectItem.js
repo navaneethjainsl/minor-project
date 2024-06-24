@@ -1,9 +1,13 @@
 // ProjectItem.js
-import React from 'react';
+import React from "react";
 
 const ProjectItem = ({ category, title, imgSrc, imgAlt }) => {
   return (
-    <li className={`project-item active`} data-filter-item data-category={category}>
+    <li
+      className={`project-item active`}
+      data-filter-item
+      data-category={category}
+    >
       <a href="#">
         <figure className="project-img">
           <div className="project-item-icon-box">

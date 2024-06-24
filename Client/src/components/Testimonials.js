@@ -1,11 +1,11 @@
-import React from 'react';
-import './Sidebar.css';
+import React from "react";
+import "./Sidebar.css";
 
 // Import images directly
-import avatar1 from '../logo/avatar-1.png';
-import avatar2 from '../logo/avatar-2.png';
-import avatar3 from '../logo/avatar-3.png';
-import avatar4 from '../logo/avatar-4.png';
+import avatar1 from "../logo/avatar-1.png";
+import avatar2 from "../logo/avatar-2.png";
+import avatar3 from "../logo/avatar-3.png";
+import avatar4 from "../logo/avatar-4.png";
 
 const TestimonialItem = ({ name, avatar, text }) => (
   <li className="testimonials-item">
@@ -13,7 +13,9 @@ const TestimonialItem = ({ name, avatar, text }) => (
       <figure className="testimonials-avatar-box">
         <img src={avatar} alt={name} width="60" data-testimonials-avatar />
       </figure>
-      <h4 className="h4 testimonials-item-title" data-testimonials-title>{name}</h4>
+      <h4 className="h4 testimonials-item-title" data-testimonials-title>
+        {name}
+      </h4>
       <div className="testimonials-text" data-testimonials-text>
         <p>{text}</p>
       </div>

@@ -1,11 +1,11 @@
-import React from 'react';
+import React from "react";
 
 const Skills = () => {
   const skills = [
-    { name: 'Web design', value: 80 },
-    { name: 'Graphic design', value: 70 },
-    { name: 'Branding', value: 90 },
-    { name: 'WordPress', value: 50 },
+    { name: "Web design", value: 80 },
+    { name: "Graphic design", value: 70 },
+    { name: "Branding", value: 90 },
+    { name: "WordPress", value: 50 },
   ];
 
   return (
@@ -19,7 +19,10 @@ const Skills = () => {
               <data value={skill.value}>{skill.value}%</data>
             </div>
             <div className="skill-progress-bg">
-              <div className="skill-progress-fill" style={{ width: `${skill.value}%` }}></div>
+              <div
+                className="skill-progress-fill"
+                style={{ width: `${skill.value}%` }}
+              ></div>
             </div>
           </li>
         ))}
