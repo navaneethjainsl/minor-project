@@ -11,6 +11,7 @@ import passport from "passport";
 import passportLocalMongoose from "passport-local-mongoose";
 import dotenv from 'dotenv/config';
 import fs from 'fs';
+import axios from "axios";
 
 import { PdfReader } from "pdfreader";
 
@@ -48,7 +49,7 @@ app.use(session({
 /////////////////////////////////////////////////////////Firebase/////////////////////////////////////////////////////////
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { getFirestore, updateDoc } from "firebase/firestore";
+import { getFirestore, updateDoc, arrayUnion } from "firebase/firestore";
 import { collection, getDocs, doc, setDoc, query, where , orderBy } from "firebase/firestore";
 import { deleteDoc } from "firebase/firestore";
 
@@ -265,6 +266,8 @@ app.post("/upload", async (req, res) => {
             contentType: file.mimetype,
         };
         
+        console.log("file");
+        console.log(file);
         console.log("file.name");
         console.log(file.name);
         console.log("file.mimetype");
@@ -304,10 +307,14 @@ app.post("/upload", async (req, res) => {
                     
                     await updateDoc(doc(usersRef, "notes"), {
                         [file.name.substring(0, fileName.indexOf('.'))]: {
-                        name: file.name,
-                        mimetype: file.mimetype,
-                        link: downloadURL,
-                        size: file.size,
+                            name: file.name,
+                            mimetype: file.mimetype,
+                            link: downloadURL,
+                            size: file.size,
+                            messages: [{
+                                role: "user",
+                                content: "what is Linear Regression?",
+                            }],
                         }
                     });
 
@@ -326,6 +333,114 @@ app.post("/upload", async (req, res) => {
     
     // res.redirect('/upload');
 });
+
+app.post("/chatPdf/upload", async (req, res) => {
+    // const file = req.files.file;
+    console.log(req.body);
+    const url = req.body.url;
+    const mimetype = req.body.mimetype;
+    
+    const config = {
+        headers: {
+          "x-api-key": process.env.CHATPDF_API_KEY,
+          "Content-Type": mimetype,
+        },
+    };
+    
+    const data = {
+        url: url,
+    }
+    
+    axios
+    .post("https://api.chatpdf.com/v1/sources/add-url", data, config)
+    .then((response) => {
+        console.log("Source ID:", response.data.sourceId);
+        res.status(200).json({success: true, sourceId: response.data.sourceId});
+    })
+    .catch((error) => {
+        console.log("Error:", error.message);
+        console.log("Response:", error.response.data);
+        res.status(200).json({success: false, message: error});
+    });
+});
+
+
+// import admin from 'firebase-admin';
+app.get("/chatPdf/chat", async (req, res) => {
+    console.log(req.query);
+
+    const username = "navaneethjainsl";
+    
+    // const url = req.body.url;
+    const fileName = req.query.fileName;
+    const mimetype = req.query.mimetype;
+    const sourceId = req.query.sourceId;
+    const userMessage = req.query.message;
+
+    const usersRef = collection(dbf, username);
+
+    await updateDoc(doc(usersRef, "notes"), {
+        'IDS.messages': arrayUnion({
+            role: "user",
+            content: userMessage,
+        })
+    });
+
+    const querySnapshot = await getDocs(usersRef);
+    let docs = {};
+    querySnapshot.forEach((doc) => {
+        console.log(doc.id, " => ", doc.data());
+
+        docs[doc.id]= doc.data();
+    });
+
+    const messages = docs["notes"][fileName]["messages"];
+    console.log("messages")
+    console.log(messages)
+    
+    const config = {
+        headers: {
+          "x-api-key": process.env.CHATPDF_API_KEY,
+          "Content-Type": mimetype,
+        },
+    };
+
+    const data = {
+        sourceId: sourceId,
+        messages: messages,
+    };
+    
+    axios
+    .post("https://api.chatpdf.com/v1/chats/message", data, config)
+    .then((response) => {
+        console.log("Result:", response.data.content);
+        res.json({success: true, message: response.data.content});
+    })
+    .catch((error) => {
+        console.error("Error:", error.message);
+        console.log("Response:", error.response.data);
+        res.json({success: false, message: error});
+    });
+
+    // const config = {
+    //     headers: {
+    //         "x-api-key": process.env.CHATPDF_API_KEY,
+    //         "Content-Type": "application/json",
+    //     },
+    //     responseType: "stream",
+    // };
+
+    // const data = {
+    //     stream: true,
+    //     sourceId: "src_Ow0hS4Hgug0UDCy0rnsse",
+    //     messages: [
+    //       {
+    //         role: "user",
+    //         content: "what is Linear Regression?",
+    //       },
+    //     ],
+    // };
+})
 
 
 app.get("/ilovepdf/merge", async (req, res)=>{
