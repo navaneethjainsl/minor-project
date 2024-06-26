@@ -93,9 +93,9 @@ app.get("/", (req, res) => {
     res.redirect("/login");
 });
 
-app.get("/login", (req, res) =>{
-    res.send("Login");
-});
+// app.get("/login", (req, res) =>{
+//     res.send("Login");
+// });
 
 app.post("/login", async (req, res) =>{
     const data = req.body;
@@ -129,9 +129,9 @@ app.post("/login", async (req, res) =>{
     res.json({success: false, message: "Username or password incorrect"});
 });
 
-app.get("/signup", (req, res) =>{
-    res.send("Signup")
-});
+// app.get("/signup", (req, res) =>{
+//     res.send("Signup")
+// });
 
 app.post("/signup", async (req, res) =>{
     // const data = req.body;
@@ -364,7 +364,6 @@ app.post("/chatPdf/upload", async (req, res) => {
     });
 });
 
-
 // import admin from 'firebase-admin';
 app.get("/chatPdf/chat", async (req, res) => {
     console.log(req.query);
@@ -440,6 +439,182 @@ app.get("/chatPdf/chat", async (req, res) => {
     //       },
     //     ],
     // };
+});
+
+app.get('/displayPdf', (req, res) => {
+    console.log(req.params.fileName)
+    // const fileName = req.params.fileName;
+    const fileName = "Report%20Format%20EVS.docx";
+    
+    // res.redirect(`https://firebasestorage.googleapis.com/v0/b/student-sync-nie.appspot.com/o/navaneethjainsl%2F${fileName}.pdf?alt=media&token=d7e2958a-6a1b-462b-9614-d51c073be6d3`)
+    res.json({success: true, url:`https://firebasestorage.googleapis.com/v0/b/student-sync-nie.appspot.com/o/navaneethjainsl%2F${fileName}.pdf?alt=media`})
+});
+
+app.get('/announcements', function(req, res) {
+    const announcements = [
+        {
+            topic: "PGCET Cut Off RANK 2023-24",
+            link: "https://nie.ac.in/wp-content/uploads/2024/06/PGCET-CUT-OFF-RANK-2023-24.pdf",
+            date: new Date().toLocaleDateString(),
+        },
+        {
+            topic: "DCET Cut Off RANK 2023-24",
+            link: "https://nie.ac.in/wp-content/uploads/2024/06/DCET-CUT-OFF-RANK-FOR-2023-24.pdf",
+            date: new Date().toLocaleDateString(),
+        },
+        {
+            topic: "Provision for Improvement Test – Students of B.E. II, IV & VI Semester (AY 2023-24)",
+            link: "https://nie.ac.in/wp-content/uploads/2024/06/Dean-AA_Circular_Even_26_14.06.2024.pdf",
+            date: new Date().toLocaleDateString(),
+        },
+        {
+            topic: "VI Semester Test 2 Time Table (2023-24)",
+            link: "https://nie.ac.in/wp-content/uploads/2024/06/VIsem-test22023-24.pdf",
+            date: new Date().toLocaleDateString(),
+        },
+    ];
+
+    const notifications = [
+        {
+            topic: "TATA Steel - Queerious Season 3",
+            link: "https://gradpartners.in/e/Queerious-Season-3-125",
+            date: "25/06/2024",
+        },
+        {
+            topic: "Lowe's India",
+            link: "https://forms.gle/GEnXUqSe35B8oMbQ9",
+            date: "21/06/2024",
+        },
+        {
+            topic: "DCET Cut Off RANK 2023-24",
+            link: "https://forms.gle/K2sSJuRdyohFHmn7A",
+            date: "20/06/2024",
+        },
+        {
+            topic: "Epicor",
+            link: "https://forms.gle/8YS65wYza8QHgfox5",
+            date: "12/06/24",
+        },
+    ];
+
+    res.status(200).json({success: true, message: {college: announcements, placements: notifications}});
+});
+
+app.get("/smash", async (req, res) => {
+    // const userRef = collection(dbf, "smash");
+    // await setDoc(doc(userRef, "1"), {});
+    
+    res.render("upload");;
+});
+
+app.post("/smash", async (req, res) => {
+    // const username = req.body.username;
+    const username = "smash";
+    const time = new Date().getTime();
+    
+    console.log("req.body");
+    console.log(req.body);
+    console.log("req.files");
+    console.log(req.files);
+    console.log("req.file");
+    console.log(req.file);
+
+    if(req.files){
+        const file = req.files.file;
+
+        const str = file.name + time;
+        let hash;
+
+        for (const char of str) {
+            hash ^= char.charCodeAt(0); // Bitwise XOR operation
+        }
+    
+        const fileRef = ref(storage, `${username}/${hash}`);
+        // const filesRef = ref(storage, 'mountains.jpg');
+    
+        const metadata = {
+            contentType: file.mimetype,
+        };
+        
+        console.log("file");
+        console.log(file);
+        console.log("file.name");
+        console.log(file.name);
+        console.log("file.mimetype");
+        console.log(file.mimetype);
+        console.log("file.data");
+        console.log(file.data);
+    
+        // 'file' comes from the Blob or File API
+        const uploadTask = uploadBytesResumable(fileRef, file.data, metadata)
+    
+        uploadTask.on('state_changed', 
+            (snapshot) => {
+                // Observe state change events such as progress, pause, and resume
+                // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                console.log('Upload is ' + progress + '% done');
+                switch (snapshot.state) {
+                    case 'paused':
+                        console.log('Upload is paused');
+                        break;
+                    case 'running':
+                        console.log('Upload is running');
+                        break;
+                }
+            }, 
+            (error) => {
+                // Handle unsuccessful uploads
+            }, 
+            () => {
+                // Handle successful uploads on complete
+                // For instance, get the download URL: https://firebasestorage.googleapis.com/...
+                getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
+                    console.log('File available at', downloadURL);
+
+                    const fileName = file.name;
+                    const usersRef = collection(dbf, username);
+                    
+                    await setDoc(doc(usersRef, hash.toString()), {
+                        name: file.name,
+                        mimetype: file.mimetype,
+                        link: downloadURL,
+                        size: file.size,
+                        messages: [],
+                    });
+
+                    // Later Version: to append without reading -> 
+                    // notes: firebase.firestore.FieldValue.arrayUnion(...newData.notes) , where newData = note:{notes: []}
+                    
+                    // res.status(200).json({success: true, downloadURL: downloadURL, file: file});
+                    res.status(200).json({success: true, code: hash, downloadURL: downloadURL});
+                });
+            }
+        );
+    
+        
+    }
+
+    
+    // res.redirect('/upload');
+});
+
+app.get('/smash/:code',async (req, res) => {
+    const code = req.params.code;
+    console.log(code);
+
+    const querySnapshot = await getDocs(collection(dbf, "smash"));
+    let docs = {};
+    querySnapshot.forEach((doc) => {
+        console.log(doc.id, " => ", doc.data());
+
+        docs[doc.id]= doc.data();
+    });
+
+    console.log("docs");
+    console.log(docs[code]["link"]);
+
+    res.redirect(docs[code]["link"]);
 })
 
 
@@ -532,6 +707,7 @@ app.get('/drive/upload', (req, res)=>{
                 media: media,
                 fields: 'id',
             });
+            console.log('File:', file.data);
             console.log('File Id:', file.data.id);
             res.json({success: true, fileId: file.data.id});
         } catch (error) {
