@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/navaneethjainsl/minor-project#readme",
   "dependencies": {
+    "@adobe/pdfservices-node-sdk": "^4.0.1",
     "@azure/identity": "^4.2.0",
     "@azure/openai": "^1.0.0-beta.12",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
@@ -24,6 +25,7 @@
     "@google/generative-ai": "^0.11.4",
     "@ilovepdf/ilovepdf-nodejs": "^0.2.6",
     "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "ejs": "^3.1.10",
     "express": "^4.19.2",

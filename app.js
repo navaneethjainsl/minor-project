@@ -12,6 +12,7 @@ import passportLocalMongoose from "passport-local-mongoose";
 import dotenv from 'dotenv/config';
 import fs from 'fs';
 import axios from "axios";
+import cors from "cors";
 
 import { PdfReader } from "pdfreader";
 
@@ -39,6 +40,7 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 app.use(fileUpload());
+app.use(cors());
 
 app.use(session({
     secret: "navaneethjainsl",
@@ -155,6 +157,8 @@ app.post("/signup", async (req, res) =>{
         email: req.body.email,
         collegeEmail: req.body.collegeEmail,
         usn: req.body.usn,
+        dob: req.body.dob,
+        phno: req.body.phno,
         password: req.body.password,
     });
 
