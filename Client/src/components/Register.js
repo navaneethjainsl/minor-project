@@ -1,15 +1,21 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useHistory, Link } from "react-router-dom";
 import styles from './Register.module.css';
 import axios from 'axios';
 
+// const history = useHistory();
+
 function Register() {
+  const history = useHistory();
+
   const [formData, setFormData] = useState({
     name: '',
     username: '',
     email: '',
     collegeEmail: '',
     usn: '',
+    phno: '',
+    dob: '',
     password: '',
     confirmPassword: ''
   });
@@ -22,23 +28,39 @@ function Register() {
   };
 
   const handleSubmit = async (e) => {
+
+
     e.preventDefault(); // Prevent default form submission
+    console.log(formData.password);
+    console.log(formData.confirmPassword);
+    console.log(formData.password !== formData.confirmPassword);
+
+    // Client-side password match check
+    if (formData.password !== formData.confirmPassword) {
+      alert("Passwords don't match");
+      return;
+    }
 
     try {
-      // Replace the Firestore addDoc function with an Axios POST request
-      const response = await axios.post('/api/register', {
+      const response = await axios.post('http://localhost:3000/signup', {
         name: formData.name,
         username: formData.username,
         email: formData.email,
         collegeEmail: formData.collegeEmail,
         usn: formData.usn,
-        password: formData.password
+        phno: formData.phno,
+        dob: formData.dob,
+        password: formData.password,
+        confirmPassword: formData.confirmPassword
+
       });
-  
-      alert('User registered successfully');
+      if(response.data.success){
+        console.log('User registered successfully');
+        history.push("/home");
+      }
+
       console.log('Response data: ', response.data);
-      // history.push('/'); // Uncomment and use your routing logic if needed
-  
+      
       // Clear form data after successful registration
       setFormData({
         name: '',
@@ -46,12 +68,19 @@ function Register() {
         email: '',
         collegeEmail: '',
         usn: '',
+        phno: '',
+        dob: '',
         password: '',
         confirmPassword: ''
       });
     } catch (error) {
       console.error(error);
-      alert('Error registering user');
+      console.log(error);
+      if (error.response && error.response.status === 401) {
+        console.log(error);
+      } else {
+        // alert('Error registering user');
+      }
     }
   };
   
@@ -145,6 +174,36 @@ function Register() {
           />
         </div>
         
+        
+        {/* Confirm Password Field */}
+        <div className={styles.field}>
+          <svg className={styles.inputIcon} style={{ color: 'white' }} xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"></path>
+          </svg>
+          <input
+            placeholder="Phone number"
+            className={styles.inputField}
+            type="number"
+            name="phno"
+            value={formData.phno}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <div className={styles.field}>
+          <svg className={styles.inputIcon} style={{ color: 'white' }} xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"></path>
+          </svg>
+          <input
+            placeholder="DOB"
+            className={styles.inputField}
+            type="date"
+            name="dob"
+            value={formData.dob}
+            onChange={handleChange}
+            required
+          />
+        </div>
         {/* Password Field */}
         <div className={styles.field}>
           <svg className={styles.inputIcon} style={{ color: 'white' }} xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -160,8 +219,6 @@ function Register() {
             required
           />
         </div>
-        
-        {/* Confirm Password Field */}
         <div className={styles.field}>
           <svg className={styles.inputIcon} style={{ color: 'white' }} xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
             <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"></path>
