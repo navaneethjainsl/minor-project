@@ -1,41 +1,35 @@
 import "./Sidebar.css";
-import React, { useState } from "react";
-import { Link } from "react-router-dom"; // Import Link
+import React from "react";
+import { NavLink } from "react-router-dom";
 
 const Navbar = () => {
-  //     const [click, setClick] = useState(false);
-  // //   const [button, setButton] = useState(true);
-
-  //   const handleClick = () => setClick(!click);
-  //   const closeMobileMenu = () => setClick(false);
-
   return (
     <nav className="navbar">
       <ul className="navbar-list">
         <li className="navbar-item">
-          <Link to="/home" className="navbar-link active">
+          <NavLink to="/home" className="navbar-link" activeClassName="active">
             Home
-          </Link>
+          </NavLink>
         </li>
         <li className="navbar-item">
-          <Link to="/videos" className="navbar-link">
+          <NavLink to="/videos" className="navbar-link" activeClassName="active">
             Videos
-          </Link>
+          </NavLink>
         </li>
         <li className="navbar-item">
-          <Link to="/announcement" className="navbar-link">
+          <NavLink to="/announcement" className="navbar-link" activeClassName="active">
             Announcement
-          </Link>
+          </NavLink>
         </li>
         <li className="navbar-item">
-          <Link to="/qna" className="navbar-link">
+          <NavLink to="/qna" className="navbar-link" activeClassName="active">
             QNA
-          </Link>
+          </NavLink>
         </li>
         <li className="navbar-item">
-          <Link to="/contact" className="navbar-link">
+          <NavLink to="/contact" className="navbar-link" activeClassName="active">
             Contact
-          </Link>
+          </NavLink>
         </li>
       </ul>
     </nav>

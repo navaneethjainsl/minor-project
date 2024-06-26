@@ -1,0 +1,151 @@
+/* Homepage.css */
+
+.blog-posts {
+    margin-bottom: 40px;
+  }
+  
+  .upload-form-section {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    text-align: center;
+    margin: 20px auto;
+    max-width: 600px;
+  }
+  
+  .upload-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .file-input {
+    margin-bottom: 20px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  .upload-button {
+    background-color: #212321;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .upload-button:hover {
+    background-color: #1d1e1d;
+  }
+  
+  .filter-list {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  
+  .filter-item {
+    margin: 0 10px;
+  }
+  
+  .filter-item button {
+    background: none;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  
+  .filter-item button.active,
+  .filter-item button:hover {
+    background-color: #2a2f2b;
+    color: white;
+    border-radius: 4px;
+  }
+  
+  .filter-select-box {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  
+  .filter-select {
+    background: none;
+    border: 1px solid #ccc;
+    padding: 10px 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+  }
+  
+  .select-value {
+    margin-right: 10px;
+  }
+  
+  .select-list {
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    position: absolute;
+    z-index: 1;
+  }
+  
+  .select-item button {
+    background: none;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+  }
+  
+  .select-item button:hover {
+    background-color: #f1f1f1;
+  }
+  
+  .blog-post-item {
+    list-style: none;
+    margin-bottom: 20px;
+  }
+  
+  .blog-content {
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fff;
+    text-align: left;
+  }
+  
+  .blog-meta {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .blog-category {
+    margin-right: 10px;
+    font-weight: bold;
+  }
+  
+  .dot {
+    height: 5px;
+    width: 5px;
+    background-color: #bbb;
+    border-radius: 50%;
+    display: inline-block;
+    margin: 0 10px;
+  }
+  
+  .h3 {
+    font-size: 18px;
+    margin: 0;
+  }
+  
+  .blog-text {
+    color: #666;
+  }
+  

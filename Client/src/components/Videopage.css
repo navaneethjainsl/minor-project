@@ -1,0 +1,112 @@
+/* General styles */
+body {
+    font-family: Arial, sans-serif;
+  }
+  
+  .header {
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .projects {
+    padding: 20px;
+  }
+  
+  /* Filter container to handle wrapping */
+  .filter-container {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  
+  .filter-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .filter-item button {
+    padding: 10px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    cursor: pointer;
+  }
+  
+  .filter-item button.active {
+    background-color: #007bff;
+    color: #fff;
+  }
+  
+  .filter-select-box {
+    position: relative;
+    margin-left: auto;
+  }
+  
+  .select-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    width: 100%;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    max-height: 200px; /* Adjust as needed */
+    overflow-y: auto;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .select-item button {
+    width: 100%;
+    text-align: left;
+    padding: 8px;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .select-item button:hover,
+  .select-item button:focus {
+    background-color: #f0f0f0;
+  }
+  
+  /* Project list styles */
+  .project-list {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .project-item {
+    margin-bottom: 20px;
+  }
+  
+  .project-item a {
+    text-decoration: none;
+    color: inherit;
+  }
+  
+  .project-img {
+    position: relative;
+  }
+  
+  .project-item-icon-box {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    padding: 10px;
+    color: #fff;
+  }
+  
+  .project-title {
+    margin: 10px 0 5px;
+    font-size: 1.2em;
+  }
+  
+  .project-category {
+    color: #666;
+  }
+  

@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { firestore } from '../firebase'; // Import Firestore instance
-import { collection, addDoc } from 'firebase/firestore';
 import { Link } from 'react-router-dom';
 import styles from './Register.module.css';
+import axios from 'axios';
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -23,15 +22,11 @@ function Register() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match");
-      return;
-    }
-    
+    e.preventDefault(); // Prevent default form submission
+
     try {
-      // Add user registration data to Firestore
-      const userDocRef = await addDoc(collection(firestore, 'users'), {
+      // Replace the Firestore addDoc function with an Axios POST request
+      const response = await axios.post('/api/register', {
         name: formData.name,
         username: formData.username,
         email: formData.email,
@@ -39,11 +34,11 @@ function Register() {
         usn: formData.usn,
         password: formData.password
       });
-
+  
       alert('User registered successfully');
-      console.log('Document written with ID: ', userDocRef.id);
-      // history.push('/');
-
+      console.log('Response data: ', response.data);
+      // history.push('/'); // Uncomment and use your routing logic if needed
+  
       // Clear form data after successful registration
       setFormData({
         name: '',
@@ -59,7 +54,7 @@ function Register() {
       alert('Error registering user');
     }
   };
-
+  
   return (
     <div className={styles.formContainer} style={{ background: '#252424' }}>
       <form onSubmit={handleSubmit} style={{ boxShadow: '' }}>
@@ -186,12 +181,12 @@ function Register() {
           <button className={styles.button1} type="submit">Register</button>
         </div>
         
-        <p style={{ paddingBottom: '34px',color:'white',display:'flex',flexDirection:'column',alignItems:'center' }}>Already have an account? <Link to="/login" >Login here</Link></p>
+        <p style={{ paddingBottom: '34px', color: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          Already have an account? <Link to="/login">Login here</Link>
+        </p>
       </form>
     </div>
   );
-
 }
-
 
 export default Register;

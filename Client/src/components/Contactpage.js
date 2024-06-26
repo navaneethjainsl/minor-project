@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-// import "./ContactPage.css"; // Assuming you have the CSS styles in this file
+import axios from "axios"; // Import axios
 
 const Button = styled.button`
   background-color: #007bff;
@@ -34,14 +34,8 @@ function ContactPage() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const response = await fetch("/api/send-email", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(formData)
-      });
-      if (response.ok) {
+      const response = await axios.post("http://localhost:3000/", formData); // Send formData to backend
+      if (response.status === 200) {
         console.log("Email sent successfully");
         // Optionally, reset form fields
         setFormData({

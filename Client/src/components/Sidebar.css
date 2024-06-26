@@ -2026,3 +2026,71 @@ textarea.form-input::-webkit-resizer {
     max-width: 700px;
   }
 }
+
+/* navbar */
+:root {
+  --orange-yellow-crayola: #f8a530; 
+}
+
+
+
+.navbar-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+}
+
+.navbar-item {
+  margin-right: 10px;
+}
+
+.navbar-link {
+  color: black; /* Default color */
+  text-decoration: none;
+  padding: 10px;
+}
+
+.navbar-link.active {
+  color: var(--orange-yellow-crayola); /* Active link color */
+}
+
+/* quora */
+.mapbox {
+  margin: 20px 0;
+}
+
+#input {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+}
+
+button {
+  margin-top: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+.qna-list {
+  margin-top: 20px;
+}
+
+.qna-item {
+  margin-bottom: 20px;
+  padding: 10px;
+  border-top: 1px solid #ccc;
+}
+
+.qna-item h3 {
+  margin-bottom: 5px;
+}

@@ -1,43 +1,25 @@
 import React, { useState } from "react";
 import { IonIcon } from "@ionic/react";
 import { chevronDown, eyeOutline } from "ionicons/icons";
-import proj1 from "../logo/project-1.jpg";
-import proj2 from "../logo/project-2.png";
-import proj3 from "../logo/project-3.jpg";
-import proj4 from "../logo/project-4.png";
-import proj5 from "../logo/project-5.png";
-import proj6 from "../logo/project-6.png";
-import proj7 from "../logo/project-7.png";
-import proj8 from "../logo/project-8.jpg";
-import proj9 from "../logo/project-9.png";
+import "./Videopage.css"; // Assuming you have some custom CSS for this page
 
 const Videospage = () => {
   const [filter, setFilter] = useState("All");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const projects = [
-    { title: "Finance", category: "PYQ", imgSrc: proj1, alt: "finance" },
-    { title: "Orizon", category: "PYQ", imgSrc: proj2, alt: "orizon" },
-    { title: "Fundo", category: "Notes", imgSrc: proj3, alt: "fundo" },
-    {
-      title: "Brawlhalla",
-      category: "Quick Notes",
-      imgSrc: proj4,
-      alt: "brawlhalla",
-    },
-    { title: "DSM.", category: "Notes", imgSrc: proj5, alt: "dsm" },
-    { title: "MetaSpark", category: "Notes", imgSrc: proj6, alt: "metaspark" },
-    { title: "Summary", category: "PYQ", imgSrc: proj7, alt: "summary" },
-    {
-      title: "Task Manager",
-      category: "Quick Notes",
-      imgSrc: proj8,
-      alt: "task manager",
-    },
-    { title: "Arrival", category: "PYQ", imgSrc: proj9, alt: "arrival" },
+    { title: "Mathematics Basics", category: "Mathematics", videoUrl: "https://www.youtube.com/embed/NWxoRX3KU0g", alt: "mathematics" },
+    { title: "Physics Fundamentals", category: "Physics", videoUrl: "https://www.youtube.com/embed/EkpR6TtMSv0", alt: "physics" },
+    { title: "Chemistry Concepts", category: "Chemistry", videoUrl: "https://www.youtube.com/embed/JN0XsRIlY6w", alt: "chemistry" },
+    { title: "Computer Science Principles", category: "Computer Science", videoUrl: "https://www.youtube.com/embed/zOjov-2OZ0E", alt: "computer science" },
+    { title: "Biology Basics", category: "Biology", videoUrl: "https://www.youtube.com/embed/2uU_u_UaV2U", alt: "biology" },
+    { title: "Literature Analysis", category: "Literature", videoUrl: "https://www.youtube.com/embed/_S6ht8BQPx0", alt: "literature" },
+    { title: "History Lessons", category: "History", videoUrl: "https://www.youtube.com/embed/6EY0PRA2Ekg", alt: "history" },
+    { title: "Economics Explained", category: "Economics", videoUrl: "https://www.youtube.com/embed/QwzvNAAqH3g", alt: "economics" },
+    { title: "Geography Insights", category: "Geography", videoUrl: "https://www.youtube.com/embed/IsIqg1eRtJo", alt: "geography" },
   ];
 
-  const categories = ["All", "Notes", "Quick Notes", "PYQ"];
+  const categories = ["All", "Mathematics", "Physics", "Chemistry", "Computer Science", "Biology", "Literature", "History", "Economics", "Geography"];
 
   const filteredProjects =
     filter === "All"
@@ -60,7 +42,7 @@ const Videospage = () => {
       </header>
 
       <section className="projects">
-        <ul className="filter-list">
+        <ul className="filter-list" >
           {categories.map((category, index) => (
             <li className="filter-item" key={index}>
               <button
@@ -79,7 +61,7 @@ const Videospage = () => {
             data-select
             onClick={handleDropdownToggle}
           >
-            <div className="select-value" data-selecct-value>
+            <div className="select-value" data-select-value>
               {filter}
             </div>
             <div className="select-icon">
@@ -111,12 +93,20 @@ const Videospage = () => {
               data-category={project.category.toLowerCase()}
               key={index}
             >
-              <a href="#">
+              <a href={project.videoUrl} target="_blank" rel="noopener noreferrer">
                 <figure className="project-img">
                   <div className="project-item-icon-box">
                     <IonIcon icon={eyeOutline} />
                   </div>
-                  <img src={project.imgSrc} alt={project.alt} loading="lazy" />
+                  <iframe
+                    width="100%"
+                    height="200"
+                    src={project.videoUrl}
+                    title={project.alt}
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  ></iframe>
                 </figure>
                 <h3 className="project-title">{project.title}</h3>
                 <p className="project-category">{project.category}</p>
