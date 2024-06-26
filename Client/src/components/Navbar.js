@@ -31,6 +31,11 @@ const Navbar = () => {
             Contact
           </NavLink>
         </li>
+        <li className="navbar-item">
+          <NavLink to="/fileshare" className="navbar-link" activeClassName="active">
+            File Share
+          </NavLink>
+        </li>
       </ul>
     </nav>
   );

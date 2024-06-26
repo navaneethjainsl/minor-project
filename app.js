@@ -12,8 +12,8 @@ import passportLocalMongoose from "passport-local-mongoose";
 import dotenv from 'dotenv/config';
 import fs from 'fs';
 import axios from "axios";
-
 import { PdfReader } from "pdfreader";
+import cors from 'cors';
 
 
 
@@ -32,8 +32,10 @@ const port = process.env.PORT || 3000;
 // dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
 const app = express();
+
+app.use(cors());
+app.use(bodyParser.json());
 
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -133,39 +135,35 @@ app.get("/signup", (req, res) =>{
     res.send("Signup")
 });
 
-app.post("/signup", async (req, res) =>{
-    // const data = req.body;
-    // console.log("data");
-    // console.log(data);
 
-    const password = req.body.password;
-    const confirmPassword = req.body.confirmPassword;
-    if(password !== confirmPassword){
-        res.status(401).json({success: false, message: "Passwords dont match"});
+app.post("/signup", async (req, res) => {
+    try {
+        const { name, username, email, collegeEmail, usn,phno,dob, password, confirmPassword } = req.body;
+
+        if (password !== confirmPassword) {
+            return res.status(401).json({ success: false, message: "Passwords don't match" });
+        }
+
+        const usersRef = collection(dbf, "users");
+        await setDoc(doc(usersRef, username), {
+            name: name,
+            username: username,
+            email: email,
+            collegeEmail: collegeEmail,
+            usn: usn,
+            phno: phno,
+            dob: dob,
+            password: password,
+        });
+
+        const userRef = collection(dbf, username);
+        await setDoc(doc(userRef, "notes"), {});
+
+        return res.status(200).json({ success: true });
+    } catch (error) {
+        console.error("Error signing up user:", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
     }
-
-    // const usersCol = collection(dbf, 'users');
-    // const usersRef = ref.child('users');
-    // usersRef.set();
-    
-    const usersRef = collection(dbf, "users");
-    await setDoc(doc(usersRef, req.body.username), {
-        name: req.body.name,
-        username: req.body.username,
-        email: req.body.email,
-        collegeEmail: req.body.collegeEmail,
-        usn: req.body.usn,
-        password: req.body.password,
-    });
-
-    const userRef = collection(dbf, req.body.username);
-    await setDoc(doc(userRef, "notes"), {});
-
-    // console.log("usersRef");
-    // console.log(usersRef);
-    // res.redirect("/login");
-    res.status(200).json({success: true});
-    
 });
 
 app.get('/home',async (req, res) => {

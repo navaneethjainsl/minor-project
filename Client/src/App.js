@@ -45,6 +45,7 @@ import Qna from "./components/Qna";
 import "./App.css";
 import Register from './components/Register';
 import Login from './components/Login';
+import File from "./components/Fileshare";
 
 function App() {
   return (
@@ -68,6 +69,7 @@ function App() {
               <Route path="/announcement" component={Announcement} />
               <Route path="/qna" component={Qna} />
               <Route path="/contact" component={Contact} />
+              <Route path="/fileshare" component={File} />
               </Switch>
             </div>
           </main>
