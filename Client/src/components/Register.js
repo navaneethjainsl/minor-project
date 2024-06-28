@@ -53,9 +53,7 @@ function Register() {
     })
 
     try {
-      const response = await axios.post('http://localhost:3000/signup',{
-        withCredentials: true,
-      }, {
+      const response = await axios.post('http://localhost:3000/signup', {
         name: formData.name,
         username: formData.username,
         email: formData.email,
@@ -66,6 +64,9 @@ function Register() {
         password: formData.password,
         confirmPassword: formData.confirmPassword
 
+      }
+      ,{
+        withCredentials: true,
       });
       if(response.data.success){
         console.log('User registered successfully');

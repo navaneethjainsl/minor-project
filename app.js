@@ -19,8 +19,10 @@ import { dirname } from 'path';
 import session from "express-session";
 import passport from "passport";
 import passportLocalMongoose from "passport-local-mongoose";
-import LocalStrategy from 'passport-local';
-import bcrypt from 'bcrypt';
+import {Strategy} from 'passport-local';
+import bcrypt from 'bcrypt-nodejs';
+import cookieParser from 'cookie-parser';
+
 
 import axios from "axios";
 import cors from "cors";
@@ -44,13 +46,13 @@ app.use(express.static("public"));
 app.use(fileUpload());
 app.use(express.json());
 app.use(cors({
-    origin: 'http://localhost:3000', // allow to server to accept request from different origin
+    origin: 'http://localhost:3001', // allow to server to accept request from different origin
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true // allow session cookie from browser to pass through
 }));
 app.use((req, res, next) => {
-    // access-control-allow-origin http://localhost:3000
-    res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
+    // access-control-allow-origin http://localhost:3001
+    res.header('Access-Control-Allow-Origin', 'http://localhost:3001');
     res.header('Access-Control-Allow-Credentials', 'true');
     res.header(
       'Access-Control-Allow-Headers',
@@ -59,12 +61,17 @@ app.use((req, res, next) => {
     res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
     next();
 });
+app.use(cookieParser());
+// app.use(cors());
 
 app.use(session({
     secret: "navaneethjainsl",
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false }
+    cookie: { 
+        secure: false,
+        maxAge: 24 * 60 * 60 * 1000
+    } 
 }));
 
 app.use(passport.initialize());
@@ -136,7 +143,7 @@ app.get("/", (req, res) => {
 //     console.log("data");
 //     console.log(data);
     
-//     const hashedPassword = await bcrypt.hash(req.body.password, 10);
+//     const hashedPassword = await bcrypt.hashSync(req.body.password, bcrypt.genSaltSync(10), null);
     
 //     const usersRef = collection(dbf, "users");
 //     const q = query(usersRef, where("username", "==", req.body.username + ""), where("password", "==", hashedPassword));
@@ -155,76 +162,21 @@ app.get("/", (req, res) => {
 //     res.json({success: false, message: "Username or password incorrect"});
 // });
 
-app.post('/login', async (req, res) => {
-    passport.authenticate('local', {
-        successRedirect: '/successRedirect',
-        failureRedirect: '/failureRedirect',
-        failureFlash: false
-    }, (err, user) => {
-        res.json({success: true});
-    });
-
-
-});
-  
-app.get('/successRedirect', (req, res) => {
-    res.json({ success: true });
-});
-
-app.get('/failureRedirect', (req, res) => {
-    res.json({ success: false, message: "Username or password incorrect" });
-});
-
-app.post("/signup", async (req, res) => {
-    const { name, username, email, collegeEmail, usn, dob, phno, password, confirmPassword } = req.body;
-
-    if (password !== confirmPassword) {
-        return res.status(401).json({ success: false, message: "Passwords don't match" });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const usersRef = collection(dbf, "users");
-    await setDoc(doc(usersRef, username), {
-        name: req.body.name,
-        username: req.body.username,
-        email: req.body.email,
-        collegeEmail: req.body.collegeEmail,
-        usn: req.body.usn,
-        dob: req.body.dob,
-        phno: req.body.phno,
-        password: hashedPassword,
-    });
-
-    const userRef = collection(dbf, username);
-    await setDoc(doc(userRef, "notes"), {});
-
-    res.status(200).json({ success: true });
-});
 // app.get("/signup", (req, res) =>{
 //     res.send("Signup")
 // });
-
 
 app.get('/logout', (req, res) => {
     req.logout();
     res.redirect('/login');
 });
 
-function ensureAuthenticated(req, res, next) {
-    if (req.isAuthenticated()) {
-      return next();
-    }
-    res.redirect('/login'); // Redirect to login if not authenticated
-}
-
-
 /////////////////////////////////////////////////////////home/////////////////////////////////////////////////////////
 
 app.get('/home', async (req, res) => {
     console.log("req.isAuthenticated()");
     console.log(req.isAuthenticated());
-    if (req.isAuthenticated()) {
+    // if (req.isAuthenticated()) {
         // const username = req.body.username;
         const username = "navaneethjainsl";
 
@@ -238,10 +190,14 @@ app.get('/home', async (req, res) => {
         
         console.log(Object.values(docs.notes));
 
+        console.log("req.user");
+        console.log(req.user);
+        console.log("req.cookies");
+        console.log(req.cookies);
         res.json({success: true, files: Object.values(docs.notes)});
-    } else {
-        res.redirect('/login');
-    }
+    // } else {
+        // res.redirect('/login');
+    // }
     
 });
 
@@ -588,7 +544,13 @@ app.get('/announcements', function(req, res) {
         },
     ];
 
-    res.status(200).json({success: true, message: {college: announcements, placements: notifications}});
+    // if (req.isAuthenticated()){
+        res.status(200).json({success: true, message: {college: announcements, placements: notifications}});
+
+    // }
+    // else{
+    //     res.send("Login")
+    // }
 });
 
 /////////////////////////////////////////////////////////Smash/////////////////////////////////////////////////////////
@@ -710,6 +672,70 @@ app.get('/smash/:code',async (req, res) => {
     res.redirect(docs[code]["link"]);
 })
 
+/////////////////////////////////////////////////////////Smash/////////////////////////////////////////////////////////
+
+app.post('/qna', async (req, res) => {
+    const username = "navaneethjainsl"
+    const userMessage = req.body.message;
+    
+    const usersRef = collection(dbf, username);
+
+    await setDoc(doc(usersRef, "qna"), {
+        // 'IDS.messages': arrayUnion({
+        //     role: "user",
+        //     content: userMessage,
+        // })
+        message:[{
+            role: "user",
+            parts: [{text: "What is linear regression"}],
+
+        }]
+    });
+    
+
+    const querySnapshot = await getDocs(usersRef);
+    let docs = {};
+    querySnapshot.forEach((doc) => {
+        console.log(doc.id, " => ", doc.data().message);
+
+        docs[doc.id]= doc.data().message;
+    });
+
+    let messages = docs["qna"];
+    console.log("messages")
+    console.log(messages)
+    
+    const chat = model.startChat({
+        history: messages,
+        generationConfig: {
+            maxOutputTokens: 100,
+        },
+    });
+
+    messages = [...messages, 
+        {
+        role: "user",
+        parts: [{text: userMessage}],
+
+    }]
+
+    await setDoc(doc(usersRef, "qna"), {
+        // 'IDS.messages': arrayUnion({
+        //     role: "user",
+        //     content: userMessage,
+        // })
+        message: messages
+    });
+
+
+    const result = await chat.sendMessage(userMessage);
+    const response = await result.response;
+    const text = response.text();
+    console.log(text);
+
+    res.json({success: true, message: text})
+});
+
 /////////////////////////////////////////////////////////PDF Tools/////////////////////////////////////////////////////////
 
 import ILovePDFApi from '@ilovepdf/ilovepdf-nodejs';
@@ -739,7 +765,6 @@ app.get("/ilovepdf/merge", async (req, res)=>{
 
         
 });
-
 
 /////////////////////////////////////////////////////////GDrive/////////////////////////////////////////////////////////
 
@@ -912,7 +937,12 @@ app.get('/drive/preview', async (req, res) => {
 })
 
 app.get('/end', (req, res)=>{
-    res.send("Success");
+    if (req.isAuthenticated()){
+        res.send("Success");
+    }
+    else{
+        res.send("Login");
+    }
 })
 
 app.get('/oauth2callback', (req, res) => {
@@ -938,10 +968,10 @@ app.get('/oauth2callback', (req, res) => {
     });
 });
 
-
 /////////////////////////////////////////////////////////GCalendar/////////////////////////////////////////////////////////
 
 import readline from 'readline';
+import { refreshToken } from 'firebase-admin/app';
 app.get('/google/authorize', async (req, res) => {
     const SCOPES = ['https://www.googleapis.com/auth/drive.file'];
 
@@ -1073,64 +1103,130 @@ app.get('/googleResponse', async (req, res) => {
 
 /////////////////////////////////////////////////////////Serialise or Deserialise/////////////////////////////////////////////////////////
 
-
-passport.use(new LocalStrategy(
-    async (username, password, done) => {
-      try {
-        const usersRef = collection(dbf, "users");
-        const q = query(usersRef, where("username", "==", username));
-        const userSnap = await getDocs(q);
-  
-        if (userSnap.empty) {
-          return done(null, false, { message: 'Incorrect username.' });
-        }
-  
-        let userData;
-        userSnap.forEach((doc) => {
-          userData = doc.data();
-        });
-  
-        const match = await bcrypt.compare(password, userData.password);
-        if (match) {
-          return done(null, userData); // Pass the entire user object
-        } else {
-          return done(null, false, { message: 'Incorrect password.' });
-        }
-      } catch (error) {
-        return done(error);
-      }
-    }
-));
-  
-// Serialize and deserialize user
-passport.serializeUser((user, done) => {
-    done(null, user.username);
-});
-
-// Deserialize user
-passport.deserializeUser(async (username, done) => {
+passport.use(new Strategy(
+  async function (username, password, done) {
     try {
         const usersRef = collection(dbf, "users");
         const q = query(usersRef, where("username", "==", username));
         const userSnap = await getDocs(q);
 
-        if (userSnap.empty) {
-            return done(null, false);
-        }
-
         let userData;
         userSnap.forEach((doc) => {
-        userData = doc.data();
+            userData = doc.data();
         });
 
-        done(null, userData);
+        if(password === userData.password){
+
+            return done(null, userData);
+        }
+        else{
+            return done('Incorrect username or password')
+        }
+
     } catch (error) {
-        done(error);
+        return done(error);
     }
+  }
+));
+
+// Serialize user
+passport.serializeUser((user, done) => {
+  done(null, user);
 });
 
-/////////////////////////////////////////////////////////Listening/////////////////////////////////////////////////////////
+// Deserialize user
+passport.deserializeUser((user, done) => {
+    done(null, user);
+});
 
-app.listen(port, function () {
-    console.log(`listening on ${port}`);
+// Routes
+app.get('/login', async (req, res)=>{
+    res.send('login');
+});
+
+app.post('/login', async (req, res) => {
+    passport.authenticate("local", {
+        // successRedirect: '/successRedirect',
+        failureRedirect: '/login'
+    });
+
+    console.log(req.body)
+
+    const usersRef = collection(dbf, "users");
+    const q = query(usersRef, where("username", "==", req.body.username.toString()));
+    const userSnap = await getDocs(q);
+
+    let userData;
+    userSnap.forEach((doc) => {
+        userData = doc.data();
+    });
+    console.log(userData);
+
+    // res.cookie('name', userData.name);
+    // res.cookie('username', userData.username);
+    // res.cookie('email', userData.email);
+    // res.cookie('colgEmail', userData.colgEmail);
+    // res.cookie('usn', userData.usn);
+    res.cookie('name', userData.name, { httpOnly: true, sameSite: 'Lax' });
+    res.cookie('username', userData.username, { httpOnly: true, sameSite: 'Lax' });
+    res.cookie('email', userData.email, { httpOnly: true, sameSite: 'Lax' });
+    res.cookie('colgEmail', userData.colgEmail, { httpOnly: true, sameSite: 'Lax' });
+    res.cookie('usn', userData.usn, { httpOnly: true, sameSite: 'Lax' });
+
+    
+    res.json({ success: true });
+});
+
+app.get('/successRedirect', (req, res) => {
+    // res.json({ success: true, message: "successRedirect" });
+    res.send('successRedirect');
+});
+
+app.get('/failureRedirect', (req, res) => {
+    res.json({ success: false, message: "Username or password incorrect" });
+    // res.json({ success: false, message: "successRedirect" });
+});
+
+app.get('/signup', (req, res) => {
+    res.send('signup');
+});
+
+app.post("/signup", async (req, res) => {
+    const password = req.body.password;
+    const confirmPassword = req.body.confirmPassword;
+    if(password !== confirmPassword){
+        res.status(401).json({success: false, message: "Passwords dont match"});
+    }
+    
+    console.log("req.body");
+    console.log(req.body);
+    const usersRef = collection(dbf, "users");
+    // console.log("usersRef");
+    // console.log(usersRef);
+    await setDoc(doc(usersRef, req.body.username + ""), {
+        name: req.body.name,
+        username: req.body.username,
+        email: req.body.email,
+        collegeEmail: req.body.collegeEmail,
+        usn: req.body.usn,
+        // dob: req.body.dob,
+        // phno: req.body.phno,
+        password: req.body.password,
+    });
+
+    const userRef = collection(dbf, req.body.username + "");
+    await setDoc(doc(userRef, "notes"), {
+        note: "Notes"
+    });
+
+    await setDoc(doc(userRef, "qna"), {
+        note: "Notes"
+    });
+
+    res.status(200).json({success: true});
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });

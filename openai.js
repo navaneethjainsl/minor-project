@@ -1,7 +1,7 @@
 import https from 'https';
 
-const apiKey = '00155f2f468041b6b915e1ef794518b2'; // Replace with your actual API key
-const url = 'studentSync.openai.azure.com'
+const apiKey = 'c415a4803acb41d782edc48be4af2579'; // Replace with your actual API key
+const url = 'studentsync-nie.openai.azure.com'
 const path = '/openai/deployments/studentSync2/chat/completions?api-version=2024-02-15-preview';
 
 const data = JSON.stringify({
@@ -54,9 +54,9 @@ function makeRequest(options, data) {
 
 
 async function get(){
-    responsePromise = await makeRequest(options, data);
+    let responsePromise = await makeRequest(options, data);
     responsePromise = JSON.parse(responsePromise)
-    console.log(responsePromise.choices[0].message.content);
+    console.log(responsePromise);
     console.log(responsePromise);
 
 }
