@@ -1,32 +1,36 @@
 import express from 'express';
 import fileUpload from 'express-fileupload';
+
 import mongodb from 'mongodb';
 import {MongoClient} from "mongodb";
 import mongoose  from "mongoose";
+
 import ejs from "ejs";
 import lodash from "lodash";
 import bodyParser from "body-parser";
+import dotenv from 'dotenv/config';
+import fs from 'fs';
+
+import path from 'path';
+import process from 'process';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
 import session from "express-session";
 import passport from "passport";
 import passportLocalMongoose from "passport-local-mongoose";
-import dotenv from 'dotenv/config';
-import fs from 'fs';
+import {Strategy} from 'passport-local';
+import bcrypt from 'bcrypt-nodejs';
+import cookieParser from 'cookie-parser';
+
+
 import axios from "axios";
 import cors from "cors";
 
 import { PdfReader } from "pdfreader";
 
-
-
-import ILovePDFApi from '@ilovepdf/ilovepdf-nodejs';
-
-import path from 'path';
-import process from 'process';
 import {authenticate} from '@google-cloud/local-auth';
 import {google} from 'googleapis';
-
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 
 const port = process.env.PORT || 3000;
 
@@ -40,13 +44,38 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 app.use(fileUpload());
-app.use(cors());
+app.use(express.json());
+app.use(cors({
+    origin: 'http://localhost:3001', // allow to server to accept request from different origin
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true // allow session cookie from browser to pass through
+}));
+app.use((req, res, next) => {
+    // access-control-allow-origin http://localhost:3001
+    res.header('Access-Control-Allow-Origin', 'http://localhost:3001');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header(
+      'Access-Control-Allow-Headers',
+      'Origin, X-Requested-With, Content-Type, Accept'
+    );
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+    next();
+});
+app.use(cookieParser());
+// app.use(cors());
 
 app.use(session({
     secret: "navaneethjainsl",
     resave: false,
     saveUninitialized: false,
+    cookie: { 
+        secure: false,
+        maxAge: 24 * 60 * 60 * 1000
+    } 
 }));
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 /////////////////////////////////////////////////////////Firebase/////////////////////////////////////////////////////////
 import { initializeApp } from "firebase/app";
@@ -80,6 +109,14 @@ let uri = process.env.URI;
 const dbm = mongoose.connect(uri, {useNewUrlParser: true});
 
 
+/////////////////////////////////////////////////////////Gemini/////////////////////////////////////////////////////////
+
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+const genAI = new GoogleGenerativeAI(process.env.API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
+
+
 /////////////////////////////////////////////////////////ILovePDF/////////////////////////////////////////////////////////
 const ilovepdf = new ILovePDFApi(
     process.env.ILOVEPDF_PUBLIC_KEY,
@@ -89,118 +126,88 @@ const ilovepdf = new ILovePDFApi(
     }
 );
 
-
 /////////////////////////////////////////////////////////Routings/////////////////////////////////////////////////////////
+
 app.get("/", (req, res) => {
     res.redirect("/login");
 });
+
+/////////////////////////////////////////////////////////Login / Signup/////////////////////////////////////////////////////////
 
 // app.get("/login", (req, res) =>{
 //     res.send("Login");
 // });
 
-app.post("/login", async (req, res) =>{
-    const data = req.body;
-    console.log("data");
-    console.log(data);
+// app.post("/login", async (req, res) =>{
+//     const data = req.body;
+//     console.log("data");
+//     console.log(data);
     
-    const usersRef = collection(dbf, "users");
-    const q = query(usersRef, where("username", "==", req.body.username + ""), where("password", "==", req.body.password));
-    const userSnap = await getDocs(q);
+//     const hashedPassword = await bcrypt.hashSync(req.body.password, bcrypt.genSaltSync(10), null);
     
-    let userData;
-    userSnap.forEach(async (doc) => {
-        userData = doc.data();
-
-        // console.log("userData");
-        // console.log(userData);
-        // res.send(userData);
-
-        // res.send("Login Successful");
-        // Success redirect
-        // res.redirect("/login");
-        res.json({success: true});
-    });
-    // console.log("userData");
-    // console.log(userData);
+//     const usersRef = collection(dbf, "users");
+//     const q = query(usersRef, where("username", "==", req.body.username + ""), where("password", "==", hashedPassword));
+//     const userSnap = await getDocs(q);
     
-    // res.send("Login Unsuccessful");
+//     let userData;
+//     userSnap.forEach(async (doc) => {
+//         userData = doc.data();
 
-    // Failure redirect
-    // res.redirect("/login");
-    res.json({success: false, message: "Username or password incorrect"});
-});
+//         // console.log("userData");
+//         // console.log(userData);
+
+//         res.json({success: true});
+//     });
+    
+//     res.json({success: false, message: "Username or password incorrect"});
+// });
 
 // app.get("/signup", (req, res) =>{
 //     res.send("Signup")
 // });
 
-app.post("/signup", async (req, res) =>{
-    // const data = req.body;
-    // console.log("data");
-    // console.log(data);
+app.get('/logout', (req, res) => {
+    req.logout();
+    res.redirect('/login');
+});
 
-    const password = req.body.password;
-    const confirmPassword = req.body.confirmPassword;
-    if(password !== confirmPassword){
-        res.status(401).json({success: false, message: "Passwords dont match"});
-    }
+/////////////////////////////////////////////////////////home/////////////////////////////////////////////////////////
 
-    // const usersCol = collection(dbf, 'users');
-    // const usersRef = ref.child('users');
-    // usersRef.set();
-    
-    const usersRef = collection(dbf, "users");
-    await setDoc(doc(usersRef, req.body.username), {
-        name: req.body.name,
-        username: req.body.username,
-        email: req.body.email,
-        collegeEmail: req.body.collegeEmail,
-        usn: req.body.usn,
-        dob: req.body.dob,
-        phno: req.body.phno,
-        password: req.body.password,
-    });
+app.get('/home', async (req, res) => {
+    console.log("req.isAuthenticated()");
+    console.log(req.isAuthenticated());
+    // if (req.isAuthenticated()) {
+        // const username = req.body.username;
+        const username = "navaneethjainsl";
 
-    const userRef = collection(dbf, req.body.username);
-    await setDoc(doc(userRef, "notes"), {});
+        const querySnapshot = await getDocs(collection(dbf, username));
+        let docs = {};
+        querySnapshot.forEach((doc) => {
+            console.log(doc.id, " => ", doc.data());
 
-    // console.log("usersRef");
-    // console.log(usersRef);
-    // res.redirect("/login");
-    res.status(200).json({success: true});
+            docs[doc.id]= doc.data();
+        });
+        
+        console.log(Object.values(docs.notes));
+
+        console.log("req.user");
+        console.log(req.user);
+        console.log("req.cookies");
+        console.log(req.cookies);
+        res.json({success: true, files: Object.values(docs.notes)});
+    // } else {
+        // res.redirect('/login');
+    // }
     
 });
 
-app.get('/home',async (req, res) => {
-    // const username = req.body.username;
-    const username = "navaneethjainsl";
-
-    const querySnapshot = await getDocs(collection(dbf, username));
-    let docs = {};
-    querySnapshot.forEach((doc) => {
-        console.log(doc.id, " => ", doc.data());
-
-        docs[doc.id]= doc.data();
-    });
-    
-    console.log(Object.values(docs.notes));
-
-    res.json({success: true, files: Object.values(docs.notes)});
-});
-
-
-import { GoogleGenerativeAI } from "@google/generative-ai";
-// import dotenv from 'dotenv/config';
-// import fs from "fs";
-
-// Access your API key as an environment variable (see "Set up your API key" above)
-const genAI = new GoogleGenerativeAI(process.env.API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
-app.get('/pdfSummary', async (req, res, next) => {
+app.post('/pdfSummary', async (req, res, next) => {
+    const url = req.body.url;
+    console.log(url);
     
     try {
-        const allText = await readPDF('public/pdfs/IDS.pdf');
+        // const allText = await readPDF('public/pdfs/IDS.pdf');
+        const allText = await readPDF(url);
         // res.send(allText);
         // res.json({success: true, content: allText});
         
@@ -217,10 +224,13 @@ app.get('/pdfSummary', async (req, res, next) => {
     }
 });
 
-app.get('/pdfText', async (req, res, next) => {
-    
+app.post('/pdfText', async (req, res, next) => {
+    const url = req.body.url;
+    console.log(url);
+
     try {
-        const allText = await readPDF('public/pdfs/IDS.pdf');
+        // const allText = await readPDF('public/pdfs/IDS.pdf');
+        const allText = await readPDF(url);
         // res.send(allText);
         res.status(200).json({success: true, content: allText});
     } catch (err) {
@@ -230,20 +240,52 @@ app.get('/pdfText', async (req, res, next) => {
     }
 });
 
-function readPDF(filePath) {
+async function readPDF(firebaseUrl) {
+    try {
+        // Fetch the PDF file from Firebase Storage
+        const response = await axios.get(firebaseUrl, {
+            responseType: 'arraybuffer'  // Ensure response is treated as binary data
+        });
+
+        // Parse the PDF content
+        const buffer = Buffer.from(response.data);  // Convert arraybuffer to Buffer
+        const allText = await parsePDF(buffer);    // Parse PDF and get all text
+
+        return allText;
+    } catch (error) {
+        throw new Error(`Failed to read PDF: ${error.message}`);
+    }
+}
+
+function parsePDF(buffer) {
     return new Promise((resolve, reject) => {
-      const allText = []; // Array to store all extracted text
-      new PdfReader().parseFileItems(filePath, (err, item) => {
-        if (err) {
-          reject(err); // Reject the promise if there's an error
-        } else if (!item) {
-          resolve(allText.join('\n')); // Resolve with all text joined by newline on EOF
-        } else if (item.text) {
-          allText.push(item.text); // Append text to the array
-        }
-      });
+        const allText = [];  // Array to store all extracted text
+        new PdfReader().parseBuffer(buffer, (err, item) => {
+            if (err) {
+                reject(err);  // Reject the promise if there's an error
+            } else if (!item) {
+                resolve(allText.join('\n'));  // Resolve with all text joined by newline on EOF
+            } else if (item.text) {
+                allText.push(item.text);  // Append text to the array
+            }
+        });
     });
 }
+
+// function readPDF(filePath) {
+//     return new Promise((resolve, reject) => {
+//       const allText = []; // Array to store all extracted text
+//       new PdfReader().parseFileItems(filePath, (err, item) => {
+//         if (err) {
+//           reject(err); // Reject the promise if there's an error
+//         } else if (!item) {
+//           resolve(allText.join('\n')); // Resolve with all text joined by newline on EOF
+//         } else if (item.text) {
+//           allText.push(item.text); // Append text to the array
+//         }
+//       });
+//     });
+// }
 
 app.get('/upload' , async (req, res) => {
     res.render('upload');
@@ -368,7 +410,6 @@ app.post("/chatPdf/upload", async (req, res) => {
     });
 });
 
-// import admin from 'firebase-admin';
 app.get("/chatPdf/chat", async (req, res) => {
     console.log(req.query);
 
@@ -454,6 +495,8 @@ app.get('/displayPdf', (req, res) => {
     res.json({success: true, url:`https://firebasestorage.googleapis.com/v0/b/student-sync-nie.appspot.com/o/navaneethjainsl%2F${fileName}.pdf?alt=media`})
 });
 
+/////////////////////////////////////////////////////////Announcements/////////////////////////////////////////////////////////
+
 app.get('/announcements', function(req, res) {
     const announcements = [
         {
@@ -501,8 +544,16 @@ app.get('/announcements', function(req, res) {
         },
     ];
 
-    res.status(200).json({success: true, message: {college: announcements, placements: notifications}});
+    // if (req.isAuthenticated()){
+        res.status(200).json({success: true, message: {college: announcements, placements: notifications}});
+
+    // }
+    // else{
+    //     res.send("Login")
+    // }
 });
+
+/////////////////////////////////////////////////////////Smash/////////////////////////////////////////////////////////
 
 app.get("/smash", async (req, res) => {
     // const userRef = collection(dbf, "smash");
@@ -529,9 +580,10 @@ app.post("/smash", async (req, res) => {
         const str = file.name + time;
         let hash;
 
-        for (const char of str) {
-            hash ^= char.charCodeAt(0); // Bitwise XOR operation
-        }
+        hash = Math.abs(str.charCodeAt());
+        // for (const char of str) {
+        //     hash ^= char.charCodeAt(0); // Bitwise XOR operation
+        // }
     
         const fileRef = ref(storage, `${username}/${hash}`);
         // const filesRef = ref(storage, 'mountains.jpg');
@@ -595,7 +647,6 @@ app.post("/smash", async (req, res) => {
                 });
             }
         );
-    
         
     }
 
@@ -621,6 +672,73 @@ app.get('/smash/:code',async (req, res) => {
     res.redirect(docs[code]["link"]);
 })
 
+/////////////////////////////////////////////////////////Smash/////////////////////////////////////////////////////////
+
+app.post('/qna', async (req, res) => {
+    const username = "navaneethjainsl"
+    const userMessage = req.body.message;
+    
+    const usersRef = collection(dbf, username);
+
+    await setDoc(doc(usersRef, "qna"), {
+        // 'IDS.messages': arrayUnion({
+        //     role: "user",
+        //     content: userMessage,
+        // })
+        message:[{
+            role: "user",
+            parts: [{text: "What is linear regression"}],
+
+        }]
+    });
+    
+
+    const querySnapshot = await getDocs(usersRef);
+    let docs = {};
+    querySnapshot.forEach((doc) => {
+        console.log(doc.id, " => ", doc.data().message);
+
+        docs[doc.id]= doc.data().message;
+    });
+
+    let messages = docs["qna"];
+    console.log("messages")
+    console.log(messages)
+    
+    const chat = model.startChat({
+        history: messages,
+        generationConfig: {
+            maxOutputTokens: 100,
+        },
+    });
+
+    messages = [...messages, 
+        {
+        role: "user",
+        parts: [{text: userMessage}],
+
+    }]
+
+    await setDoc(doc(usersRef, "qna"), {
+        // 'IDS.messages': arrayUnion({
+        //     role: "user",
+        //     content: userMessage,
+        // })
+        message: messages
+    });
+
+
+    const result = await chat.sendMessage(userMessage);
+    const response = await result.response;
+    const text = response.text();
+    console.log(text);
+
+    res.json({success: true, message: text})
+});
+
+/////////////////////////////////////////////////////////PDF Tools/////////////////////////////////////////////////////////
+
+import ILovePDFApi from '@ilovepdf/ilovepdf-nodejs';
 
 app.get("/ilovepdf/merge", async (req, res)=>{
     
@@ -648,6 +766,10 @@ app.get("/ilovepdf/merge", async (req, res)=>{
         
 });
 
+/////////////////////////////////////////////////////////GDrive/////////////////////////////////////////////////////////
+
+import {GoogleAuth} from 'google-auth-library';
+// import {google} from 'googleapis';
 app.get('/drive/upload', (req, res)=>{
     const CREDENTIALS_PATH = path.join(process.cwd(), 'credentials2.json')
     const TOKEN_PATH = path.join(process.cwd(), 'token.json')
@@ -730,13 +852,10 @@ app.get('/drive/upload', (req, res)=>{
     }
     })();
 
-
+    
 });
 
-import {GoogleAuth} from 'google-auth-library';
-// import {google} from 'googleapis';
 // req -> fileId
-
 app.get('/drive/download', async (req, res) => {
     // const fileId = req.body.fileId;
     const fileId = "1dJWJP8kdoI6JbQD3KoYZdu33UJ8CUFa2";
@@ -818,7 +937,12 @@ app.get('/drive/preview', async (req, res) => {
 })
 
 app.get('/end', (req, res)=>{
-    res.send("Success");
+    if (req.isAuthenticated()){
+        res.send("Success");
+    }
+    else{
+        res.send("Login");
+    }
 })
 
 app.get('/oauth2callback', (req, res) => {
@@ -844,13 +968,10 @@ app.get('/oauth2callback', (req, res) => {
     });
 });
 
+/////////////////////////////////////////////////////////GCalendar/////////////////////////////////////////////////////////
 
-// import { google } from 'googleapis';
 import readline from 'readline';
-// import fs from 'fs';
-// import path from 'path';
-// import dotenv from 'dotenv/config';
-
+import { refreshToken } from 'firebase-admin/app';
 app.get('/google/authorize', async (req, res) => {
     const SCOPES = ['https://www.googleapis.com/auth/drive.file'];
 
@@ -980,6 +1101,132 @@ app.get('/googleResponse', async (req, res) => {
     console.log(req.params);
 });
 
-app.listen(port, function () {
-    console.log(`listening on ${port}`);
+/////////////////////////////////////////////////////////Serialise or Deserialise/////////////////////////////////////////////////////////
+
+passport.use(new Strategy(
+  async function (username, password, done) {
+    try {
+        const usersRef = collection(dbf, "users");
+        const q = query(usersRef, where("username", "==", username));
+        const userSnap = await getDocs(q);
+
+        let userData;
+        userSnap.forEach((doc) => {
+            userData = doc.data();
+        });
+
+        if(password === userData.password){
+
+            return done(null, userData);
+        }
+        else{
+            return done('Incorrect username or password')
+        }
+
+    } catch (error) {
+        return done(error);
+    }
+  }
+));
+
+// Serialize user
+passport.serializeUser((user, done) => {
+  done(null, user);
+});
+
+// Deserialize user
+passport.deserializeUser((user, done) => {
+    done(null, user);
+});
+
+// Routes
+app.get('/login', async (req, res)=>{
+    res.send('login');
+});
+
+app.post('/login', async (req, res) => {
+    passport.authenticate("local", {
+        // successRedirect: '/successRedirect',
+        failureRedirect: '/login'
+    });
+
+    console.log(req.body)
+
+    const usersRef = collection(dbf, "users");
+    const q = query(usersRef, where("username", "==", req.body.username.toString()));
+    const userSnap = await getDocs(q);
+
+    let userData;
+    userSnap.forEach((doc) => {
+        userData = doc.data();
+    });
+    console.log(userData);
+
+    // res.cookie('name', userData.name);
+    // res.cookie('username', userData.username);
+    // res.cookie('email', userData.email);
+    // res.cookie('colgEmail', userData.colgEmail);
+    // res.cookie('usn', userData.usn);
+    res.cookie('name', userData.name, { httpOnly: true, sameSite: 'Lax' });
+    res.cookie('username', userData.username, { httpOnly: true, sameSite: 'Lax' });
+    res.cookie('email', userData.email, { httpOnly: true, sameSite: 'Lax' });
+    res.cookie('colgEmail', userData.colgEmail, { httpOnly: true, sameSite: 'Lax' });
+    res.cookie('usn', userData.usn, { httpOnly: true, sameSite: 'Lax' });
+
+    
+    res.json({ success: true });
+});
+
+app.get('/successRedirect', (req, res) => {
+    // res.json({ success: true, message: "successRedirect" });
+    res.send('successRedirect');
+});
+
+app.get('/failureRedirect', (req, res) => {
+    res.json({ success: false, message: "Username or password incorrect" });
+    // res.json({ success: false, message: "successRedirect" });
+});
+
+app.get('/signup', (req, res) => {
+    res.send('signup');
+});
+
+app.post("/signup", async (req, res) => {
+    const password = req.body.password;
+    const confirmPassword = req.body.confirmPassword;
+    if(password !== confirmPassword){
+        res.status(401).json({success: false, message: "Passwords dont match"});
+    }
+    
+    console.log("req.body");
+    console.log(req.body);
+    const usersRef = collection(dbf, "users");
+    // console.log("usersRef");
+    // console.log(usersRef);
+    await setDoc(doc(usersRef, req.body.username + ""), {
+        name: req.body.name,
+        username: req.body.username,
+        email: req.body.email,
+        collegeEmail: req.body.collegeEmail,
+        usn: req.body.usn,
+        // dob: req.body.dob,
+        // phno: req.body.phno,
+        password: req.body.password,
+    });
+
+    const userRef = collection(dbf, req.body.username + "");
+    await setDoc(doc(userRef, "notes"), {
+        note: "Notes"
+    });
+
+    await setDoc(doc(userRef, "qna"), {
+        note: "Notes"
+    });
+
+    res.status(200).json({success: true});
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
