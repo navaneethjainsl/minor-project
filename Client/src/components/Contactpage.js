@@ -34,18 +34,27 @@ function ContactPage() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const response = await axios.post("http://localhost:3000/", formData); // Send formData to backend
-      if (response.status === 200) {
-        console.log("Email sent successfully");
-        // Optionally, reset form fields
-        setFormData({
-          fullname: "",
-          email: "",
-          message: ""
-        });
-      } else {
-        console.error("Failed to send email");
-      }
+      console.log(formData);
+
+      const { fullname, email, message } = formData;
+
+      // Constructing the mailto link
+      const recipientEmail = "navaneethjainsl@gmail.com " + email;
+      const subject = `Message from ${fullname}`;
+      const body = `${message}`;
+
+      const mailtoLink = `mailto:${recipientEmail}?subject=${encodeURIComponent(
+        subject
+      )}&body=${encodeURIComponent(body)}`;
+
+      // Opening the email client
+      window.location.href = mailtoLink;
+      console.log("Email sent successfully");
+      setFormData({
+        fullname: "",
+        email: "",
+        message: ""
+      });
     } catch (error) {
       console.error("Error:", error);
     } finally {
