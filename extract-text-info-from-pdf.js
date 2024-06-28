@@ -1,4 +1,15 @@
-const {
+/*
+ * Copyright 2024 Adobe
+ * All Rights Reserved.
+ *
+ * NOTICE: Adobe permits you to use, modify, and distribute this file in
+ * accordance with the terms of the Adobe license agreement accompanying
+ * it. If you have received this file from a source other than Adobe,
+ * then your use, modification, or distribution of it requires the prior
+ * written permission of Adobe.
+ */
+
+import {
     ServicePrincipalCredentials,
     PDFServices,
     MimeType,
@@ -9,9 +20,10 @@ const {
     SDKError,
     ServiceUsageError,
     ServiceApiError
-} = require("@adobe/pdfservices-node-sdk");
-const axios = require("axios");
-const fs = require("fs");
+} from "@adobe/pdfservices-node-sdk";
+import fs from "fs";
+import dotenv from 'dotenv/config';
+import { StringDecoder } from 'string_decoder';
 
 /**
  * This sample illustrates how to extract Text Information from PDF.
@@ -23,24 +35,19 @@ const fs = require("fs");
     try {
         // Initial setup, create credentials instance
         const credentials = new ServicePrincipalCredentials({
-            clientId: process.env.ADOBEPDF_API_KEY,
-            clientSecret: process.env.ADOBEPDF_API_KEY
+            // clientId: process.env.ADOBEPDF_CLIENT_ID_API_KEY,
+            // clientSecret: process.env.ADOBEPDF_CLIENT_ID_API_KEY
+            clientId: "f85dae88f88649b1977717edd57f5d86",
+            clientSecret: "p8e-1e_HNobF_vXS9Wwla8qCZ36L7ZlmTfgf"
         });
 
         // Creates a PDF Services instance
         const pdfServices = new PDFServices({credentials});
 
-        // Download the PDF from the URL
-        const pdfUrl = 'YOUR_FIREBASE_STORAGE_PDF_URL';
-        const response = await axios({
-            url: pdfUrl,
-            method: 'GET',
-            responseType: 'stream'
-        });
-
-        // Creates an asset(s) from the downloaded stream and upload
+        // Creates an asset(s) from source file(s) and upload
+        readStream = fs.createReadStream("./public/pdfs/IDS.pdf");
         const inputAsset = await pdfServices.upload({
-            readStream: response.data,
+            readStream,
             mimeType: MimeType.PDF
         });
 
@@ -62,13 +69,18 @@ const fs = require("fs");
         // Get content from the resulting asset(s)
         const resultAsset = pdfServicesResponse.result.resource;
         const streamAsset = await pdfServices.getContent({asset: resultAsset});
+        console.log("resultAsset");
+        console.log(resultAsset);
+        console.log("streamAsset");
+        console.log(streamAsset);
 
-        // Creates a write stream and copy stream asset's content to it
-        const outputFilePath = createOutputFilePath();
-        console.log(`Saving asset at ${outputFilePath}`);
 
-        const writeStream = fs.createWriteStream(outputFilePath);
-        streamAsset.readStream.pipe(writeStream);
+        // // Creates a write stream and copy stream asset's content to it
+        // const outputFilePath = createOutputFilePath();
+        // console.log(`Saving asset at ${outputFilePath}`);
+
+        // const writeStream = fs.createWriteStream(outputFilePath);
+        // streamAsset.readStream.pipe(writeStream);
     } catch (err) {
         if (err instanceof SDKError || err instanceof ServiceUsageError || err instanceof ServiceApiError) {
             console.log("Exception encountered while executing operation", err);

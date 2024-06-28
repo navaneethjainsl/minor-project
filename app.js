@@ -1,32 +1,32 @@
 import express from 'express';
 import fileUpload from 'express-fileupload';
+
 import mongodb from 'mongodb';
 import {MongoClient} from "mongodb";
 import mongoose  from "mongoose";
+
 import ejs from "ejs";
 import lodash from "lodash";
 import bodyParser from "body-parser";
+import dotenv from 'dotenv/config';
+import fs from 'fs';
+
+import path from 'path';
+import process from 'process';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
 import session from "express-session";
 import passport from "passport";
 import passportLocalMongoose from "passport-local-mongoose";
-import dotenv from 'dotenv/config';
-import fs from 'fs';
+
 import axios from "axios";
 import cors from "cors";
 
 import { PdfReader } from "pdfreader";
 
-
-
-import ILovePDFApi from '@ilovepdf/ilovepdf-nodejs';
-
-import path from 'path';
-import process from 'process';
 import {authenticate} from '@google-cloud/local-auth';
 import {google} from 'googleapis';
-
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 
 const port = process.env.PORT || 3000;
 
@@ -80,6 +80,14 @@ let uri = process.env.URI;
 const dbm = mongoose.connect(uri, {useNewUrlParser: true});
 
 
+/////////////////////////////////////////////////////////Gemini/////////////////////////////////////////////////////////
+
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+const genAI = new GoogleGenerativeAI(process.env.API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
+
+
 /////////////////////////////////////////////////////////ILovePDF/////////////////////////////////////////////////////////
 const ilovepdf = new ILovePDFApi(
     process.env.ILOVEPDF_PUBLIC_KEY,
@@ -89,11 +97,13 @@ const ilovepdf = new ILovePDFApi(
     }
 );
 
-
 /////////////////////////////////////////////////////////Routings/////////////////////////////////////////////////////////
+
 app.get("/", (req, res) => {
     res.redirect("/login");
 });
+
+/////////////////////////////////////////////////////////Login / Signup/////////////////////////////////////////////////////////
 
 // app.get("/login", (req, res) =>{
 //     res.send("Login");
@@ -172,6 +182,8 @@ app.post("/signup", async (req, res) =>{
     
 });
 
+/////////////////////////////////////////////////////////home/////////////////////////////////////////////////////////
+
 app.get('/home',async (req, res) => {
     // const username = req.body.username;
     const username = "navaneethjainsl";
@@ -189,18 +201,13 @@ app.get('/home',async (req, res) => {
     res.json({success: true, files: Object.values(docs.notes)});
 });
 
-
-import { GoogleGenerativeAI } from "@google/generative-ai";
-// import dotenv from 'dotenv/config';
-// import fs from "fs";
-
-// Access your API key as an environment variable (see "Set up your API key" above)
-const genAI = new GoogleGenerativeAI(process.env.API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
-app.get('/pdfSummary', async (req, res, next) => {
+app.post('/pdfSummary', async (req, res, next) => {
+    const url = req.body.url;
+    console.log(url);
     
     try {
-        const allText = await readPDF('public/pdfs/IDS.pdf');
+        // const allText = await readPDF('public/pdfs/IDS.pdf');
+        const allText = await readPDF(url);
         // res.send(allText);
         // res.json({success: true, content: allText});
         
@@ -217,10 +224,13 @@ app.get('/pdfSummary', async (req, res, next) => {
     }
 });
 
-app.get('/pdfText', async (req, res, next) => {
-    
+app.post('/pdfText', async (req, res, next) => {
+    const url = req.body.url;
+    console.log(url);
+
     try {
-        const allText = await readPDF('public/pdfs/IDS.pdf');
+        // const allText = await readPDF('public/pdfs/IDS.pdf');
+        const allText = await readPDF(url);
         // res.send(allText);
         res.status(200).json({success: true, content: allText});
     } catch (err) {
@@ -230,20 +240,52 @@ app.get('/pdfText', async (req, res, next) => {
     }
 });
 
-function readPDF(filePath) {
+async function readPDF(firebaseUrl) {
+    try {
+        // Fetch the PDF file from Firebase Storage
+        const response = await axios.get(firebaseUrl, {
+            responseType: 'arraybuffer'  // Ensure response is treated as binary data
+        });
+
+        // Parse the PDF content
+        const buffer = Buffer.from(response.data);  // Convert arraybuffer to Buffer
+        const allText = await parsePDF(buffer);    // Parse PDF and get all text
+
+        return allText;
+    } catch (error) {
+        throw new Error(`Failed to read PDF: ${error.message}`);
+    }
+}
+
+function parsePDF(buffer) {
     return new Promise((resolve, reject) => {
-      const allText = []; // Array to store all extracted text
-      new PdfReader().parseFileItems(filePath, (err, item) => {
-        if (err) {
-          reject(err); // Reject the promise if there's an error
-        } else if (!item) {
-          resolve(allText.join('\n')); // Resolve with all text joined by newline on EOF
-        } else if (item.text) {
-          allText.push(item.text); // Append text to the array
-        }
-      });
+        const allText = [];  // Array to store all extracted text
+        new PdfReader().parseBuffer(buffer, (err, item) => {
+            if (err) {
+                reject(err);  // Reject the promise if there's an error
+            } else if (!item) {
+                resolve(allText.join('\n'));  // Resolve with all text joined by newline on EOF
+            } else if (item.text) {
+                allText.push(item.text);  // Append text to the array
+            }
+        });
     });
 }
+
+// function readPDF(filePath) {
+//     return new Promise((resolve, reject) => {
+//       const allText = []; // Array to store all extracted text
+//       new PdfReader().parseFileItems(filePath, (err, item) => {
+//         if (err) {
+//           reject(err); // Reject the promise if there's an error
+//         } else if (!item) {
+//           resolve(allText.join('\n')); // Resolve with all text joined by newline on EOF
+//         } else if (item.text) {
+//           allText.push(item.text); // Append text to the array
+//         }
+//       });
+//     });
+// }
 
 app.get('/upload' , async (req, res) => {
     res.render('upload');
@@ -368,7 +410,6 @@ app.post("/chatPdf/upload", async (req, res) => {
     });
 });
 
-// import admin from 'firebase-admin';
 app.get("/chatPdf/chat", async (req, res) => {
     console.log(req.query);
 
@@ -454,6 +495,9 @@ app.get('/displayPdf', (req, res) => {
     res.json({success: true, url:`https://firebasestorage.googleapis.com/v0/b/student-sync-nie.appspot.com/o/navaneethjainsl%2F${fileName}.pdf?alt=media`})
 });
 
+
+/////////////////////////////////////////////////////////Announcements/////////////////////////////////////////////////////////
+
 app.get('/announcements', function(req, res) {
     const announcements = [
         {
@@ -504,6 +548,8 @@ app.get('/announcements', function(req, res) {
     res.status(200).json({success: true, message: {college: announcements, placements: notifications}});
 });
 
+/////////////////////////////////////////////////////////Smash/////////////////////////////////////////////////////////
+
 app.get("/smash", async (req, res) => {
     // const userRef = collection(dbf, "smash");
     // await setDoc(doc(userRef, "1"), {});
@@ -529,9 +575,10 @@ app.post("/smash", async (req, res) => {
         const str = file.name + time;
         let hash;
 
-        for (const char of str) {
-            hash ^= char.charCodeAt(0); // Bitwise XOR operation
-        }
+        hash = Math.abs(str.charCodeAt());
+        // for (const char of str) {
+        //     hash ^= char.charCodeAt(0); // Bitwise XOR operation
+        // }
     
         const fileRef = ref(storage, `${username}/${hash}`);
         // const filesRef = ref(storage, 'mountains.jpg');
@@ -621,6 +668,9 @@ app.get('/smash/:code',async (req, res) => {
     res.redirect(docs[code]["link"]);
 })
 
+/////////////////////////////////////////////////////////PDF Tools/////////////////////////////////////////////////////////
+
+import ILovePDFApi from '@ilovepdf/ilovepdf-nodejs';
 
 app.get("/ilovepdf/merge", async (req, res)=>{
     
@@ -648,6 +698,11 @@ app.get("/ilovepdf/merge", async (req, res)=>{
         
 });
 
+
+/////////////////////////////////////////////////////////GDrive/////////////////////////////////////////////////////////
+
+import {GoogleAuth} from 'google-auth-library';
+// import {google} from 'googleapis';
 app.get('/drive/upload', (req, res)=>{
     const CREDENTIALS_PATH = path.join(process.cwd(), 'credentials2.json')
     const TOKEN_PATH = path.join(process.cwd(), 'token.json')
@@ -730,13 +785,10 @@ app.get('/drive/upload', (req, res)=>{
     }
     })();
 
-
+    
 });
 
-import {GoogleAuth} from 'google-auth-library';
-// import {google} from 'googleapis';
 // req -> fileId
-
 app.get('/drive/download', async (req, res) => {
     // const fileId = req.body.fileId;
     const fileId = "1dJWJP8kdoI6JbQD3KoYZdu33UJ8CUFa2";
@@ -845,12 +897,9 @@ app.get('/oauth2callback', (req, res) => {
 });
 
 
-// import { google } from 'googleapis';
-import readline from 'readline';
-// import fs from 'fs';
-// import path from 'path';
-// import dotenv from 'dotenv/config';
+/////////////////////////////////////////////////////////GCalendar/////////////////////////////////////////////////////////
 
+import readline from 'readline';
 app.get('/google/authorize', async (req, res) => {
     const SCOPES = ['https://www.googleapis.com/auth/drive.file'];
 
