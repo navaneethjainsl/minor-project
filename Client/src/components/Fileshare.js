@@ -7,7 +7,10 @@ import Fileshare from "./Fileshareapp";
 const File = () => {
   return (
     <article className="about  active" data-page="about">
-      <Fileshare />
+      <div>
+        <Fileshare />
+
+      </div>
     </article>
   );
 };

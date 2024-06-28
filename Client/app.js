@@ -7,11 +7,13 @@ app.use(cors());
 app.use(express.json());
 
 // Replace the following connection string with your MongoDB connection string
-const mongoUri = 'mongodb+srv://druthigs2003:68KdK8ubdTu31uZl@cluster0.y8u9sgh.mongodb.net/studentsync?retryWrites=true&w=majority';
+// const mongoUri = 'mongodb+srv://druthigs2003:68KdK8ubdTu31uZl@cluster0.y8u9sgh.mongodb.net/studentsync?retryWrites=true&w=majority';
+let mongoUri = "mongodb+srv://navaneethjainsl:navaneethjainsl@cluster0.7rkeunl.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
 mongoose.connect(mongoUri, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('Could not connect to MongoDB', err));
+
 
 const noteSchema = new mongoose.Schema({
   title: String,

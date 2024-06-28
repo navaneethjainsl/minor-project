@@ -3,14 +3,17 @@ import "./Sidebar.css";
 
 import QnaPage from "./Qnapage";
 
-const Contact = () => {
+const Qna = () => {
   return (
     <>
       <article className="about  active" data-page="about">
-        <QnaPage />
+        <div>
+          <QnaPage />
+
+        </div>
       </article>
     </>
   );
 };
 
-export default Contact;
+export default Qna;

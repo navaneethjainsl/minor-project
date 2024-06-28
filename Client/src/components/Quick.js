@@ -1,14 +1,14 @@
 import React from "react";
 import "./Sidebar.css";
 
-import ContactPage from "./Contactpage";
+import QuickNotes from "./QuickNotes";
 
-const Contact = () => {
+const Quick = () => {
   return (
     <>
       <article className="about  active" data-page="about">
         <div>
-          <ContactPage />
+          <QuickNotes />
 
         </div>
       </article>
@@ -16,4 +16,4 @@ const Contact = () => {
   );
 };
 
-export default Contact;
+export default Quick;

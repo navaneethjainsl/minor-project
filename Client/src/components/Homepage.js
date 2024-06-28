@@ -6,6 +6,8 @@ import { useHistory } from "react-router-dom"; // Import useHistory for navigati
 import "./Sidebar.css";
 import "./Homepage.css"; // Import custom CSS for additional styles
 
+axios.defaults.withCredentials = true;
+
 const Homepage = () => {
   const history = useHistory();
   const [blogPosts, setBlogPosts] = useState([]);
@@ -20,9 +22,7 @@ const Homepage = () => {
     // Fetch the PDF data from the backend
     const fetchBlogPosts = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/api/pdfs",{
-          withCredentials: true,
-        });
+        const response = await axios.get("http://localhost:3000/api/pdfs");
         setBlogPosts(response.data);
       } catch (error) {
         console.error("Error fetching blog posts:", error);
@@ -108,7 +108,8 @@ const Homepage = () => {
       <section className="blog-posts">
         {/* Filter buttons */}
         <div className="filter-buttons" style={{ display: 'flex', padding: '29px 0px' }}>
-          {["All", "Notes", "Quick Notes", "PYQ"].map((category) => (
+          {/* {["All", "Notes", "Quick Notes", "PYQ"].map((category) => ( */}
+          {["All"].map((category) => (
             <button
               key={category}
               className={filter === category ? "active" : ""}

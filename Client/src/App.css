@@ -385,6 +385,10 @@ main {
   z-index: 1;
 }
 
+article > div{
+  margin-top: 50px;
+}
+
 .info_more-btn::before {
   content: "";
   position: absolute;

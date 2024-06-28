@@ -40,16 +40,18 @@ function QuickNotes() {
 
   return (
     <div>
-      <CreateArea onAdd={addNote} />
-      {notes.map((note) => (
-        <Note
-          key={note._id}
-          id={note._id}
-          title={note.title}
-          content={note.content}
-          onDelete={deleteNote}
-        />
-      ))}
+        <h1 style={{color:"white"}}>Notes</h1>
+        <CreateArea onAdd={addNote} />
+        {notes.map((note) => (
+          <Note
+            key={note._id}
+            id={note._id}
+            title={note.title}
+            content={note.content}
+            onDelete={deleteNote}
+          />
+        ))}
+
     </div>
   );
 }
