@@ -3,6 +3,8 @@ import axios from "axios";
 import "./Fileshare.css"; // Custom CSS for styling
 import uploadIcon from "./logo123.png"; // Import your PNG file
 
+axios.defaults.withCredentials = true;
+
 const Fileshare = () => {
   const [uploadStatus, setUploadStatus] = useState("");
   const [shareLink, setShareLink] = useState("");
@@ -17,9 +19,7 @@ const Fileshare = () => {
     formData.append("file", file);
 
     try {
-      const response = await axios.post("http://localhost:3000/smash", {
-        withCredentials: true,
-      }, formData, {
+      const response = await axios.post("http://localhost:3000/smash", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
