@@ -13,6 +13,7 @@ import Login from './components/Login';
 import File from "./components/Fileshare";
 import PdfSummaryPage from "./components/PdfSummaryPage"; // Adjust import path
 import ExtractTextPage from "./components/ExtractTextPage";
+import QuickNotes from "./components/QuickNotes";
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
                 <Route path="/fileshare" component={File} />
                 <Route path="/pdf-summary" component={PdfSummaryPage} />
                 <Route path="/extract-text" component={ExtractTextPage} />
+                <Route path="/quicknotes" component={QuickNotes} />
 
               </Switch>
             </div>

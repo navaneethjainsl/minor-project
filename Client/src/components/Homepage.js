@@ -52,7 +52,7 @@ const Homepage = () => {
     formData.append("category", uploadCategory); // Include category in form data
 
     try {
-      const response = await axios.post(
+      const response = await axios.get(
         "http://localhost:3000/upload",
         formData,
         {
