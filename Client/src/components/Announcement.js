@@ -9,7 +9,6 @@ function Announcement() {
   return (
     <article className="about  active" data-page="about">
       <Announcementpage />
-      <Skills />
     </article>
   );
 }
