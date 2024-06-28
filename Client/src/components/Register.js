@@ -40,9 +40,22 @@ function Register() {
       alert("Passwords don't match");
       return;
     }
+    console.log({
+      name: formData.name,
+        username: formData.username,
+        email: formData.email,
+        collegeEmail: formData.collegeEmail,
+        usn: formData.usn,
+        phno: formData.phno,
+        dob: formData.dob,
+        password: formData.password,
+        confirmPassword: formData.confirmPassword
+    })
 
     try {
-      const response = await axios.post('http://localhost:3000/signup', {
+      const response = await axios.post('http://localhost:3000/signup',{
+        withCredentials: true,
+      }, {
         name: formData.name,
         username: formData.username,
         email: formData.email,

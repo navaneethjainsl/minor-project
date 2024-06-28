@@ -8,18 +8,27 @@ const Videospage = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const projects = [
-    { title: "Mathematics Basics", category: "Mathematics", videoUrl: "https://www.youtube.com/embed/NWxoRX3KU0g", alt: "mathematics" },
-    { title: "Physics Fundamentals", category: "Physics", videoUrl: "https://www.youtube.com/embed/EkpR6TtMSv0", alt: "physics" },
-    { title: "Chemistry Concepts", category: "Chemistry", videoUrl: "https://www.youtube.com/embed/JN0XsRIlY6w", alt: "chemistry" },
-    { title: "Computer Science Principles", category: "Computer Science", videoUrl: "https://www.youtube.com/embed/zOjov-2OZ0E", alt: "computer science" },
-    { title: "Biology Basics", category: "Biology", videoUrl: "https://www.youtube.com/embed/2uU_u_UaV2U", alt: "biology" },
-    { title: "Literature Analysis", category: "Literature", videoUrl: "https://www.youtube.com/embed/_S6ht8BQPx0", alt: "literature" },
-    { title: "History Lessons", category: "History", videoUrl: "https://www.youtube.com/embed/6EY0PRA2Ekg", alt: "history" },
-    { title: "Economics Explained", category: "Economics", videoUrl: "https://www.youtube.com/embed/QwzvNAAqH3g", alt: "economics" },
-    { title: "Geography Insights", category: "Geography", videoUrl: "https://www.youtube.com/embed/IsIqg1eRtJo", alt: "geography" },
+    
+    
+    { title: "Lec01: Introduction to Operating Systems", category: "Operating Systems", videoUrl: "https://www.youtube.com/embed/nqOxuy4TUEg?si=VsOttSd4yVahVlvR", alt: "Operating Systems" },
+    { title: "Lec02: Process Concept block", category: "Operating Systems", videoUrl: "https://www.youtube.com/embed/i5XZ4CopYvg?si=PTPglxtkFnwocEtS", alt: "Operating Systems" },
+    { title: "Lec03: Process State Diagram ,Process life Cycle ", category: "Operating Systems", videoUrl: "https://www.youtube.com/embed/i5XZ4CopYvg?si=qeA8W6pViEgr_ziX", alt: "Operating Systems" },
+    { title: "Lec04: Operations on Processes", category: "Operating Systems", videoUrl: "https://www.youtube.com/embed/qAHxZQPDgcE?si=FLeIdqY_tuASjPPO", alt: "Operating Systems" },
+    { title: "Lec05: Concept of threads in Operating system", category: "Operating Systems", videoUrl: "https://www.youtube.com/embed/SudcluecvZc?si=ZRygJiYfvL4dx_CD", alt: "Operating Systems" },
+    { title: "Lec06:Types of Threads in Operating Systems", category: "Operating Systems", videoUrl: "https://www.youtube.com/embed/evfkLYJry-I?si=SEjhFVtwIMtJm6VW", alt: "Operating Systems" },
+    { title: "Lec01: Introduction to Analysis and Design of Algorithms", category: "ADA", videoUrl: "https://www.youtube.com/embed/Xuazz1ouN9U?si=ERKvLarQnA49IPfx", alt: "ADA" },
+    { title: "Lec02: Importance of Specifying input to Algorithm explicitly and Carefully", category: "ADA", videoUrl: "https://www.youtube.com/embed/n-10eNqYgXE?si=fpHwztBGGG0DTCSc", alt: "ADA" },
+    { title: "Lec03: Sequence of Steps followed during the Design and Analysis of AlgorithmS", category: "ADA", videoUrl: "https://www.youtube.com/embed/Dpn2tCXOlgk?si=SoQwzBjvFIp1hQC6", alt: "ADA" },
+    { title: "Lec04 : Analysis Framework and Order of Growth", category: "ADA", videoUrl: "https://www.youtube.com/embed/6inFhFxtLHU?si=mMiXA1C6IT7hlzys", alt: "ADA" },
+    { title: "Lec05: Frequency Count Method to find the Running time of an Algorithm", category: "ADA", videoUrl: "https://www.youtube.com/embed/ysmNC2X_SrU?si=O4JWx680Vh1Xc_pf", alt: "Computer Networks" },
+    { title: "Lec01- Types of Networks", category: "Computer Networks", videoUrl: "https://www.youtube.com/embed/50BKR5qxm5U?si=e3q5cTQTO6gbhJHk", alt: "Computer Networks" },
+    { title: "Lec02-Network Layer Services", category: "Computer Networks", videoUrl: "https://www.youtube.com/embed/RHkf0MrCS8s?si=HE2we_LP-5WCz7Lc", alt: "Computer Networks" },
+    { title: "Lec03-Network layer Performance(Part-1): Types of Delay in Networks", category: "Computer Networks", videoUrl: "https://www.youtube.com/embed/Qs9ztgCaVOo?si=1uKFD6AUYVb42TRB", alt: "Computer Networks" },
+    { title: "Lec04- Throghput and Packet loss", category: "Computer Networks", videoUrl: "https://www.youtube.com/embed/pjhJtu5xfoM?si=5HzDr8GNYz2d2AlK", alt: "Computer Networks" },
+    { title: "Lec05-Open Loop and closed Loop congestion control", category: "Computer Networks", videoUrl: "https://www.youtube.com/embed/KCTQmtWg82Q?si=c9wiJcPy2OB-eKll", alt: "Computer Networks" },
   ];
 
-  const categories = ["All", "Mathematics", "Physics", "Chemistry", "Computer Science", "Biology", "Literature", "History", "Economics", "Geography"];
+  const categories = ["All", "Operating Systems", "ADA", "Computer Networks"];
 
   const filteredProjects =
     filter === "All"

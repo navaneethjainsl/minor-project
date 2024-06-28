@@ -9,7 +9,9 @@ const QnaPage = () => {
 
   const handleQuestionSubmit = async () => {
     try {
-      const res = await axios.post("http://localhost:3001/api/question", { question });
+      const res = await axios.post("http://localhost:3000/question",{
+        withCredentials: true,
+      }, { question });
       setAnswer(res.data.answer);
       setQuestion("");
       setError("");

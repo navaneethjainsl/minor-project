@@ -1,8 +1,29 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { IonIcon } from "@ionic/react";
 import { bookOutline } from "ionicons/icons";
 
 const Announcementpage = () => {
+  const [announcements, setAnnouncements] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+    const fetchAnnouncements = async () => {
+      try {
+        const response = await axios.get("http://localhost:3000/announcements",{
+          withCredentials: true,
+        });
+        const { college, placements } = response.data.message;
+        setAnnouncements(college);
+        setNotifications(placements);
+      } catch (error) {
+        console.error("Error fetching announcements:", error);
+      }
+    };
+
+    fetchAnnouncements();
+  }, []);
+
   return (
     <div>
       <header>
@@ -14,40 +35,19 @@ const Announcementpage = () => {
           <div className="icon-box">
             <IonIcon icon={bookOutline} />
           </div>
-          <h3 className="h3">Education</h3>
+          <h3 className="h3">College Announcements</h3>
         </div>
 
         <ol className="timeline-list">
-          <li className="timeline-item">
-            <h4 className="h4 timeline-item-title">
-              University school of the arts
-            </h4>
-            <span>2007 — 2008</span>
-            <p className="timeline-text">
-              Nemo enims ipsam voluptatem, blanditiis praesentium voluptum
-              delenit atque corrupti, quos dolores et quas molestias exceptur.
-            </p>
-          </li>
-
-          <li className="timeline-item">
-            <h4 className="h4 timeline-item-title">New york academy of art</h4>
-            <span>2006 — 2007</span>
-            <p className="timeline-text">
-              Ratione voluptatem sequi nesciunt, facere quisquams facere menda
-              ossimus, omnis voluptas assumenda est omnis.
-            </p>
-          </li>
-
-          <li className="timeline-item">
-            <h4 className="h4 timeline-item-title">
-              High school of art and design
-            </h4>
-            <span>2002 — 2004</span>
-            <p className="timeline-text">
-              Duis aute irure dolor in reprehenderit in voluptate, quila
-              voluptas mag odit aut fugit, sed consequuntur magni dolores eos.
-            </p>
-          </li>
+          {announcements.map((announcement, index) => (
+            <li key={index} className="timeline-item">
+              
+              <a href={announcement.link} target="_blank" rel="noopener noreferrer">
+              <h4 className="h4 timeline-item-title">{announcement.topic}</h4>
+              </a>
+              <span>{announcement.date}</span>
+            </li>
+          ))}
         </ol>
       </section>
 
@@ -56,36 +56,19 @@ const Announcementpage = () => {
           <div className="icon-box">
             <IonIcon icon={bookOutline} />
           </div>
-          <h3 className="h3">Experience</h3>
+          <h3 className="h3">Placement Notifications</h3>
         </div>
 
         <ol className="timeline-list">
-          <li className="timeline-item">
-            <h4 className="h4 timeline-item-title">Creative director</h4>
-            <span>2015 — Present</span>
-            <p className="timeline-text">
-              Nemo enim ipsam voluptatem blanditiis praesentium voluptum delenit
-              atque corrupti, quos dolores et qvuas molestias exceptur.
-            </p>
-          </li>
-
-          <li className="timeline-item">
-            <h4 className="h4 timeline-item-title">Art director</h4>
-            <span>2013 — 2015</span>
-            <p className="timeline-text">
-              Nemo enims ipsam voluptatem, blanditiis praesentium voluptum
-              delenit atque corrupti, quos dolores et quas molestias exceptur.
-            </p>
-          </li>
-
-          <li className="timeline-item">
-            <h4 className="h4 timeline-item-title">Web designer</h4>
-            <span>2010 — 2013</span>
-            <p className="timeline-text">
-              Nemo enims ipsam voluptatem, blanditiis praesentium voluptum
-              delenit atque corrupti, quos dolores et quas molestias exceptur.
-            </p>
-          </li>
+          {notifications.map((notification, index) => (
+            <li key={index} className="timeline-item">
+              
+              <a href={notification.link} target="_blank" rel="noopener noreferrer">
+              <h4 className="h4 timeline-item-title">{notification.topic}</h4>
+              </a>
+              <span>{notification.date}</span>
+            </li>
+          ))}
         </ol>
       </section>
     </div>

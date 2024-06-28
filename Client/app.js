@@ -2,22 +2,20 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const dotenv = require('dotenv');
-const cors = require('cors'); // Import cors package
+const cors = require('cors');
+const fetch = require('node-fetch'); // Import fetch for fetching PDF files
 
 dotenv.config();
 
 const app = express();
 const port = 3001;
 
-// Initialize the Google Generative AI
 const genAI = new GoogleGenerativeAI(process.env.API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-// Middleware
 app.use(bodyParser.json());
-app.use(cors()); // Use cors middleware to enable CORS
+app.use(cors());
 
-// POST /api/question endpoint
 app.post('/api/question', async (req, res) => {
   const { question } = req.body;
 
@@ -48,12 +46,65 @@ app.post('/api/question', async (req, res) => {
   }
 });
 
-// Root route handler
 app.get('/', (req, res) => {
   res.send('Welcome to the Q&A app');
 });
 
-// Start the server
+app.get('/pdfSummary', async (req, res) => {
+  const { pdfUrl } = req.query;
+
+  try {
+    const allText = await readPDF(pdfUrl);
+    const prompt = "Give me a summary of this ";
+    const result = await model.generateContent(prompt + allText);
+    const response = await result.response;
+    const summary = response.text();
+    res.json({ success: true, summary });
+  } catch (err) {
+    console.error('Error reading PDF:', err);
+    res.status(500).json({ success: false, message: "Error processing PDF" });
+  }
+});
+
+app.get('/pdfText', async (req, res) => {
+  const { pdfUrl } = req.query;
+
+  try {
+    const allText = await readPDF(pdfUrl);
+    res.status(200).json({ success: true, content: allText });
+  } catch (err) {
+    console.error('Error reading PDF:', err);
+    res.status(500).json({ success: false, message: "Error processing PDF" });
+  }
+});
+
+async function readPDF(pdfUrl) {
+  const { PdfReader } = await import('pdfreader');
+
+  // Check if the URL is absolute
+  if (!/^https?:\/\//i.test(pdfUrl)) {
+    throw new Error("Only absolute URLs are supported");
+  }
+
+  return new Promise((resolve, reject) => {
+    const allText = [];
+    fetch(pdfUrl)
+      .then(response => response.arrayBuffer())
+      .then(buffer => {
+        new PdfReader().parseBuffer(buffer, (err, item) => {
+          if (err) {
+            reject(err);
+          } else if (!item) {
+            resolve(allText.join('\n'));
+          } else if (item.text) {
+            allText.push(item.text);
+          }
+        });
+      })
+      .catch(reject);
+  });
+}
+
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
