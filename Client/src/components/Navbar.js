@@ -36,6 +36,11 @@ const Navbar = () => {
             File Share
           </NavLink>
         </li>
+        <li className="navbar-item">
+          <NavLink to="/quicknotes" className="navbar-link" activeClassName="active">
+            Quick Notes
+          </NavLink>
+        </li>
       </ul>
     </nav>
   );

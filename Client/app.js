@@ -1,110 +1,68 @@
 const express = require('express');
-const bodyParser = require('body-parser');
-const { GoogleGenerativeAI } = require("@google/generative-ai");
-const dotenv = require('dotenv');
+const mongoose = require('mongoose');
 const cors = require('cors');
-const fetch = require('node-fetch'); // Import fetch for fetching PDF files
-
-dotenv.config();
-
 const app = express();
-const port = 3001;
 
-const genAI = new GoogleGenerativeAI(process.env.API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-app.use(bodyParser.json());
 app.use(cors());
+app.use(express.json());
 
-app.post('/api/question', async (req, res) => {
-  const { question } = req.body;
+// Replace the following connection string with your MongoDB connection string
+const mongoUri = 'mongodb+srv://druthigs2003:68KdK8ubdTu31uZl@cluster0.y8u9sgh.mongodb.net/studentsync?retryWrites=true&w=majority';
 
-  try {
-    const chat = model.startChat({
-      history: [
-        {
-          role: "user",
-          parts: [{ text: "Hello, I have 2 dogs in my house." }],
-        },
-        {
-          role: "model",
-          parts: [{ text: "Great to meet you. What would you like to know?" }],
-        },
-      ],
-      generationConfig: {
-        maxOutputTokens: 100,
-      },
-    });
+mongoose.connect(mongoUri, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('Connected to MongoDB'))
+  .catch(err => console.error('Could not connect to MongoDB', err));
 
-    const result = await chat.sendMessage(question);
-    const response = await result.response;
-    const text = response.text();
-    res.json({ answer: text });
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: error.message });
-  }
+const noteSchema = new mongoose.Schema({
+  title: String,
+  content: String
 });
 
-app.get('/', (req, res) => {
-  res.send('Welcome to the Q&A app');
-});
+const Note = mongoose.model('Note', noteSchema);
 
-app.get('/pdfSummary', async (req, res) => {
-  const { pdfUrl } = req.query;
-
+// GET route to fetch all notes
+app.get('/quicknotes', async (req, res) => {
   try {
-    const allText = await readPDF(pdfUrl);
-    const prompt = "Give me a summary of this ";
-    const result = await model.generateContent(prompt + allText);
-    const response = await result.response;
-    const summary = response.text();
-    res.json({ success: true, summary });
+    const notes = await Note.find();
+    res.json(notes);
   } catch (err) {
-    console.error('Error reading PDF:', err);
-    res.status(500).json({ success: false, message: "Error processing PDF" });
+    res.status(500).json({ message: err.message });
   }
 });
 
-app.get('/pdfText', async (req, res) => {
-  const { pdfUrl } = req.query;
-
-  try {
-    const allText = await readPDF(pdfUrl);
-    res.status(200).json({ success: true, content: allText });
-  } catch (err) {
-    console.error('Error reading PDF:', err);
-    res.status(500).json({ success: false, message: "Error processing PDF" });
-  }
-});
-
-async function readPDF(pdfUrl) {
-  const { PdfReader } = await import('pdfreader');
-
-  // Check if the URL is absolute
-  if (!/^https?:\/\//i.test(pdfUrl)) {
-    throw new Error("Only absolute URLs are supported");
-  }
-
-  return new Promise((resolve, reject) => {
-    const allText = [];
-    fetch(pdfUrl)
-      .then(response => response.arrayBuffer())
-      .then(buffer => {
-        new PdfReader().parseBuffer(buffer, (err, item) => {
-          if (err) {
-            reject(err);
-          } else if (!item) {
-            resolve(allText.join('\n'));
-          } else if (item.text) {
-            allText.push(item.text);
-          }
-        });
-      })
-      .catch(reject);
+// POST route to add a new note
+app.post('/quicknotes', async (req, res) => {
+  const newNote = new Note({
+    title: req.body.title,
+    content: req.body.content
   });
-}
+  try {
+    const savedNote = await newNote.save();
+    res.status(201).json(savedNote);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
 
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+// DELETE route to delete a note
+// Route to delete a note
+app.delete('/quicknotes/:id', async (req, res) => {
+  try {
+    console.log(`Attempting to delete note with ID: ${req.params.id}`);
+    const note = await Note.findByIdAndDelete(req.params.id);
+    if (!note) {
+      console.log('Note not found');
+      return res.status(404).json({ message: 'Note not found' });
+    }
+    console.log('Note deleted successfully');
+    res.status(200).json({ message: 'Note deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting note:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+
+app.listen(3002, () => {
+  console.log('Server started on port 3002');
 });

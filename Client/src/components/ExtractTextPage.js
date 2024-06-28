@@ -13,13 +13,13 @@ const ExtractTextPage = () => {
       const pdfUrl = urlParams.get("url");
 
       try {
-        const response = await axios.get(
-          `http://localhost:3000/pdfText?url=${encodeURIComponent(pdfUrl)}`,{
+        const response = await axios.post(
+          `http://localhost:3000/pdfText`,
+          { url: pdfUrl },
+          {
             withCredentials: true,
           }
         );
-        // console.log("response.data.text");
-        // console.log(response.data.content);
         setExtractedText(response.data.content);
       } catch (error) {
         console.error("Error extracting text from PDF:", error);
@@ -30,8 +30,8 @@ const ExtractTextPage = () => {
   }, [location.search]);
 
   return (
-    <div style={{padding:'20px'}}>
-      <h2 style={{color:'white',padding:'20px'}}>Extracted Text</h2>
+    <div style={{ padding: '20px' }}>
+      <h2 style={{ color: 'white', padding: '20px' }}>Extracted Text</h2>
       <iframe
         title="PDF"
         width="600"
@@ -39,12 +39,8 @@ const ExtractTextPage = () => {
         src={new URLSearchParams(location.search).get("url")}
       ></iframe>
       <div>
-        <h3 style={{color:'white',padding:'20px'}}>Extracted Text:</h3>
-        {/* <p>{extractedText}</p> */}
-        {/* {console.log("extractedText")}
-        {console.log(extractedText)} */}
-        <textarea value={extractedText} ></textarea>
-        {/* <textarea value={extractedText} readOnly /> */}
+        <h3 style={{ color: 'white', padding: '20px' }}>Extracted Text:</h3>
+        <textarea value={extractedText} readOnly style={{ width: '100%', height: '300px' }} />
       </div>
     </div>
   );

@@ -13,8 +13,12 @@ const PdfSummaryPage = () => {
       const pdfUrl = urlParams.get("url");
 
       try {
-        const response = await axios.get(
-          `http://localhost:3000/pdfSummary?url=${encodeURIComponent(pdfUrl)}`
+        const response = await axios.post(
+          `http://localhost:3000/pdfSummary`,
+          { url: pdfUrl },
+          {
+            withCredentials: true,
+          }
         );
         setSummary(response.data.summary);
       } catch (error) {
@@ -26,10 +30,8 @@ const PdfSummaryPage = () => {
   }, [location.search]);
 
   return (
-    <>
-    {/* <h2 className="h2 article-title">Home</h2> */}
-    <div style={{padding:'20px'}}>
-      <h2 style={{color:'white',padding:'20px'}}>PDF Summary</h2>
+    <div style={{ padding: '20px' }}>
+      <h2 style={{ color: 'white', padding: '20px' }}>PDF Summary</h2>
       <iframe
         title="PDF"
         width="600"
@@ -37,12 +39,10 @@ const PdfSummaryPage = () => {
         src={new URLSearchParams(location.search).get("url")}
       ></iframe>
       <div>
-        <h3 style={{color:'white',padding:'20px'}}>Summary:</h3>
-        {/* <p>{summary}</p> */}
-        <textarea >{summary}</textarea>
+        <h3 style={{ color: 'white', padding: '20px' }}>Summary:</h3>
+        <textarea value={summary} readOnly style={{ width: '100%', height: '300px' }} />
       </div>
     </div>
-    </>
   );
 };
 
