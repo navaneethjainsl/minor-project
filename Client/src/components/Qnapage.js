@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import axios from "axios";
 import "./Qnapage.css";
 
+axios.defaults.withCredentials = true;
+
 const QnaPage = () => {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
@@ -9,10 +11,8 @@ const QnaPage = () => {
 
   const handleQuestionSubmit = async () => {
     try {
-      const res = await axios.post("http://localhost:3000/question",{
-        withCredentials: true,
-      }, { question });
-      setAnswer(res.data.answer);
+      const res = await axios.post("http://localhost:3000/qna", { question });
+      setAnswer(res.data.message);
       setQuestion("");
       setError("");
     } catch (error) {

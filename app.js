@@ -672,11 +672,12 @@ app.get('/smash/:code',async (req, res) => {
     res.redirect(docs[code]["link"]);
 })
 
-/////////////////////////////////////////////////////////Smash/////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////QnA/////////////////////////////////////////////////////////
 
 app.post('/qna', async (req, res) => {
+    console.log(req.body);
     const username = "navaneethjainsl"
-    const userMessage = req.body.message;
+    const userMessage = req.body.question;
     
     const usersRef = collection(dbf, username);
 
